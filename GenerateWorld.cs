@@ -7,13 +7,6 @@ using System.Threading.Tasks;
 namespace Gridworld_Heuristics
 {
 
-    struct worldTile
-    {
-        int cost;
-
-    }
-
-
     class createWorld
     {
 
@@ -195,9 +188,40 @@ namespace Gridworld_Heuristics
 
         static void generatePairs()
         {
+            bool incomplete;
+            //Start and goal pairs.
+            int[] sp = new int[2];
+            int[] gp = new int[2];
 
+            for (int i = 0; i < 10; i++)
+            {   incomplete = true;
+                while (incomplete)
+                {
+                    createPair(sp);
+                    createPair(gp);
+                    //ToDo: Determine if there is a valid path from sp to gp
+                    //If valid, set incomplete to false.
+                }
+
+            }
         }
 
+        static void createPair(int[] pair)
+        {
+            Random dice = new Random();
+            int x, y;
+            // Randomly create a start and end pair.
+            int a = dice.Next(4);
+            x = dice.Next(0, 120);
+            y = dice.Next(0, 160);
+            //Roll to see if we're generating a pair in the top, right, left, or bottom boundaries.
+            if (a == 0) y = dice.Next(0, 20);
+            else if (a == 1) y = dice.Next(140, 160);
+            else if (a == 2) x = dice.Next(0, 20);
+            else x = dice.Next(100, 120);
+            pair[0] = x;
+            pair[1] = y;
+        }
         static void main()
         {
             create();
