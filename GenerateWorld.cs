@@ -13,6 +13,7 @@ namespace Gridworld_Heuristics
         static int[,] world = new int[120, 160];
         static int[,] startPairs = new int[10, 2];
         static int[,] endPairs = new int[10, 2];
+        static int[,] hardPairs = new int[8, 2];
 
 
         static int randomBorder(int[] points)
@@ -58,7 +59,7 @@ namespace Gridworld_Heuristics
                 // if we roll 3, we go left.
                 // if we roll 4, we go right.
                 heading = direction;
-                if( roll == 3)
+                if (roll == 3)
                 {
                     heading = (direction - 1) % 3;
                 }
@@ -66,8 +67,8 @@ namespace Gridworld_Heuristics
                 {
                     heading = (direction + 1) % 3;
                 }
-            } 
-            
+            }
+
             if (heading == 0)
             { incx = 1; incy = 0; }
             else if (heading == 1)
@@ -91,7 +92,7 @@ namespace Gridworld_Heuristics
             //Highway cost = .25
             for (int i = 0; i < 120; i++)
             {
-                for(int j = 0; j < 160; j++)
+                for (int j = 0; j < 160; j++)
                 {
                     world[i, j] = 1;
                 }
@@ -101,12 +102,14 @@ namespace Gridworld_Heuristics
             {
                 xpair = cPair.Next(120);
                 ypair = cPair.Next(160);
+                hardPairs[i, 0] = xpair;
+                hardPairs[i, 1] = ypair;
                 for (int j = -15; j < 15; j++)
                 {
                     for (int k = -15; k < 15; k++)
                     {
                         if (xpair + j > 0 && ypair + k > 0 && xpair + j < 120 && ypair + k < 160)
-                            world[xpair + j, ypair + k] = cPair.Next(2);
+                            world[xpair + j, ypair + k] = cPair.Next(2) + 1;
                     }
                 }
             }
@@ -134,7 +137,7 @@ namespace Gridworld_Heuristics
                 {
                     for (int i = 0; i < 20; i++)
                     {
-                        if(border[0] > -1 && border[0] < 120 && border[1] > -1 && border[1] < 160)
+                        if (border[0] > -1 && border[0] < 120 && border[1] > -1 && border[1] < 160)
                         {// Checking to see if we're in bounds. Possibly inefficient, may be optimized.
                             if (world[border[0], border[1]] > 2)
                             {   //Restart process. We hit a highway. 
@@ -144,7 +147,7 @@ namespace Gridworld_Heuristics
                             }
                             else
                             {
-                                world[border[0], border[1]] += 2; 
+                                world[border[0], border[1]] += 2;
                                 // Normal highway will be 3, Hard to traverse highway will be 4;
                             }
                             border[0] += incx;
@@ -169,7 +172,7 @@ namespace Gridworld_Heuristics
             bool repeat;
             int x;
             int y;
-            for(int i = 0; i < 3840; i++)
+            for (int i = 0; i < 3840; i++)
             {// Increment for 20% of all blocks
                 repeat = true;
                 while (repeat)
@@ -194,7 +197,8 @@ namespace Gridworld_Heuristics
             int[] gp = new int[2];
 
             for (int i = 0; i < 10; i++)
-            {   incomplete = true;
+            {
+                incomplete = true;
                 while (incomplete)
                 {
                     createPair(sp);
@@ -224,9 +228,68 @@ namespace Gridworld_Heuristics
         }
         static void main()
         {
-            create();
-            generatePairs();
-            //Create file that has the world map and start/end pairs.
+            for (int i = 0; i < 5; i++)
+            {
+                create();
+                generatePairs();
+                StringBuilder buffer = new StringBuilder();
+
+                for (int j = 0; j < 10; j++)
+                    buffer.Append($"{startPairs[j, 0]},{startPairs[j, 1]}|");
+                buffer.AppendLine();
+
+                for (int j = 0; j < 10; j++)
+                    buffer.Append($"{endPairs[j, 0]},{endPairs[j, 1]}|");
+                buffer.AppendLine();
+
+                for (int j = 0; j < 8; j++)
+                    buffer.Append($"{hardPairs[j, 0]},{hardPairs[j, 1]}|");
+                buffer.AppendLine();
+
+                for (int j = 0; j < 120; j++)
+                {
+                    for(int k = 0; k < 160; k++)
+                    {
+                        //Process each character individually
+                        switch (world[j, k])
+                        {
+                            case 0:
+                                buffer.Append("0");
+                                break;
+                            case 1:
+                                buffer.Append("1");
+                                break;
+                            case 2:
+                                buffer.Append("2");
+                                break;
+                            case 3:
+                                buffer.Append("a");
+                                break;
+                            case 4:
+                                buffer.Append("b");
+                                break;
+                        }
+                    }
+                }
+
+                string filename = $"C:\\Users\\Public\\Gridworld_Heuristics\\world_{i}";
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, true))
+                {
+                    file.WriteLine(buffer.ToString());
+                }
+                //Create file that has the world map and start/end pairs.
+                /*• The first line provides the coordinates of sstart
+• The second line provides the coordinates of sgoal
+• The next eight lines provide the coordinates of the centers of the hard to traverse regions
+(i.e., the centers(rnd, yrnd) from the description above)
+• Then, provide 120 rows with 160 characters each that indicate the type of terrain for the map
+as follows:
+– Use ’0’ to indicate a blocked cell
+– Use ’1’ to indicate a regular unblocked cell
+– Use ’2’ to indicate a hard to traverse cell
+– Use ’a’ to indicate a regular unblocked cell with a highway
+– Use ’b’ to indicate a hard to traverse cell with a highway*/
+            }
 
         }
 
