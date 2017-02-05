@@ -15,7 +15,7 @@
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Algo:</TextBlock>
-                <ComboBox Name="Algo" Padding="10" FontSize ="14" Width="130"></ComboBox>
+                <ComboBox Name="Algo" ItemsSource ="{Binding Path=Algos}" Padding="10" FontSize ="14" Width="130"></ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Weight:</TextBlock>
@@ -24,15 +24,15 @@
             
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">f:</TextBlock>
-                <TextBlock Name ="f" Padding="10" FontSize="14" Width="130"></TextBlock>
+                <TextBlock Text="{Binding Path=f}" Padding="10" FontSize="14" Width="130"></TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">g:</TextBlock>
-                <TextBlock Name="g" Padding="10" FontSize="14" Width="130"></TextBlock>
+                <TextBlock Text="{Binding Path=g}" Padding="10" FontSize="14" Width="130"></TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">h:</TextBlock>
-                <TextBlock Name="h" Padding="10" FontSize="14" Width="130"></TextBlock>
+                <TextBlock Text="{Binding Path=h}" Padding="10" FontSize="14" Width="130"></TextBlock>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Runtime:</TextBlock>
@@ -40,10 +40,12 @@
             </StackPanel>
 
             <TextBlock Padding="10" FontSize="14">Start End Pairs:</TextBlock>
-            <ComboBox Name="StartEndPairs" Padding="10" FontSize ="14" Width="130" SelectionChanged="StartEndPairs_SelectionChanged"></ComboBox>
+            <ComboBox Name="StartEndPairs" ItemsSource ="{Binding PairList}" Padding="10" FontSize ="14" Width="130" 
+                      DataContextChanged="StartEndPairs_DataContextChanged"
+                      SelectionChanged="StartEndPairs_SelectionChanged"></ComboBox>
             <TextBlock Padding="10" FontSize="14">Map Selection:</TextBlock>
             <ComboBox Name="MapSelect" Padding="10" FontSize ="14" Width="130" SelectionChanged="MapSelect_SelectionChanged"
-                      ItemsSource="{Binding MapList}"></ComboBox>
+                      ItemsSource="{Binding Path=MapList}"></ComboBox>
             <TextBlock Padding=" 5"></TextBlock>
             <Button Name="Generate" Click="Generate_Click" Padding="10">Generate new worlds</Button>
             <TextBlock Padding=" 3"></TextBlock>

@@ -20,17 +20,13 @@ namespace Gridworld_Heuristics
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        int[,] world = new int[120, 160];
-        int[,] startPairs = new int[10, 2];
-        int[,] endPairs = new int[10, 2];
-        int[,] hardPairs = new int[8, 2];
+        
+        MainViewModel mvm = new MainViewModel();
 
         public MainWindow()
         {
-
+            this.DataContext = mvm;
             InitializeComponent();
-
             // Create the Grid
             Grid myGrid = new Grid();
             myGrid.Width = 1600;
@@ -81,6 +77,7 @@ namespace Gridworld_Heuristics
             //this.Content = myGrid;
             this.Map = myGrid;
             //this.Show();
+            GridHelper.initData(mvm);
 
         }
 
@@ -89,7 +86,8 @@ namespace Gridworld_Heuristics
             //Create the world.
             Gridworld_Heuristics.createWorld.generateWorld();
             //First load world 0.
-            GridHelper.readInputs(0, world, startPairs, endPairs, hardPairs);
+            GridHelper.readInputs(0, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
+            mvm.RefreshPairs();
         }
 
         private void Calculate_Click(object sender, RoutedEventArgs e)
@@ -97,16 +95,54 @@ namespace Gridworld_Heuristics
             //Check what the algorithms dropdown selection is, and the weight for the heuristic.
             //Perform algorithm on the loaded world and one particular start/end pair.
             //Update f, g, h, and Runtime.
+            //For testing, manually update f g h, and try to refresh in window
+            switch (Algo.SelectedIndex)
+            {
+                case 0:
+                    //normal A*
+                    mvm.f = 1;
+                    mvm.g = 1;
+                    mvm.h = 1;
+                    break;
+                case 1:
+                    //Weighted A*
+                    mvm.f = 2;
+                    mvm.g = 2;
+                    mvm.h = 2;
+                    break;
+                case 2:
+                    //Uniform Cost Search
+                    mvm.f = 3;
+                    mvm.g = 3;
+                    mvm.h = 3;
+                    break;
+
+                default:
+                    mvm.f = 4;
+                    mvm.g = 4;
+                    mvm.h = 4;
+                    break;
+            }
+
         }
 
         private void MapSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //Reload the world. Update StartEndPairs
             int selection = MapSelect.SelectedIndex;
-            GridHelper.readInputs(selection, world, startPairs, endPairs, hardPairs);
+            GridHelper.readInputs(selection, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
+            mvm.RefreshPairs();
+            //Recalculate Algorithm
         }
 
         private void StartEndPairs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            //Rerun the algorithm, update fgh+runtime
+            //Update Map display path highlights
+            //Update Map displayed Start/goal pair
+        }
+
+        private void StartEndPairs_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
 
         }
