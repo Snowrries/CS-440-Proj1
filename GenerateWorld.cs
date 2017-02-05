@@ -121,9 +121,11 @@ namespace Gridworld_Heuristics
             int counter;
             int[] incPair = new int[2];
             int heading;
-
+            int[,] tempworld =(int[,])world.Clone();
+            
             while (highwayConstruction)
             {
+                tempworld = (int[,])world.Clone();
                 //East is 0, South is 1, West is 2, North is 3.
                 direction = randomBorder(border);
                 // produces a random border point. Return value will be the cardinal direction of the border.
@@ -139,7 +141,7 @@ namespace Gridworld_Heuristics
                     {
                         if (border[0] > -1 && border[0] < 120 && border[1] > -1 && border[1] < 160)
                         {// Checking to see if we're in bounds. Possibly inefficient, may be optimized.
-                            if (world[border[0], border[1]] > 2)
+                            if (tempworld[border[0], border[1]] > 2)
                             {   //Restart process. We hit a highway. 
                                 hit = true;
                                 counter = 0;
@@ -147,7 +149,7 @@ namespace Gridworld_Heuristics
                             }
                             else
                             {
-                                world[border[0], border[1]] += 2;
+                                tempworld[border[0], border[1]] += 2;
                                 // Normal highway will be 3, Hard to traverse highway will be 4;
                             }
                             border[0] += incx;
@@ -168,6 +170,7 @@ namespace Gridworld_Heuristics
 
             }
             //Highway is constructed.
+            world = (int[,])tempworld.Clone();
             //Generate impassable terrain
             bool repeat;
             int x;
@@ -227,7 +230,7 @@ namespace Gridworld_Heuristics
             pair[0] = x;
             pair[1] = y;
         }
-        static void generateWorld()
+        public static void generateWorld()
         {
             for (int i = 0; i < 5; i++)
             {
@@ -244,8 +247,10 @@ namespace Gridworld_Heuristics
                 buffer.AppendLine();
 
                 for (int j = 0; j < 8; j++)
-                    buffer.Append($"{hardPairs[j, 0]},{hardPairs[j, 1]}|");
-                buffer.AppendLine();
+                {
+                    buffer.Append($"{hardPairs[j, 0]},{hardPairs[j, 1]}");
+                    buffer.AppendLine();
+                }
 
                 for (int j = 0; j < 120; j++)
                 {
@@ -276,8 +281,9 @@ namespace Gridworld_Heuristics
                 }
 
                 string filename = $"C:\\Users\\Public\\Gridworld_Heuristics\\world_{i}";
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, true))
-                {
+                System.IO.Directory.CreateDirectory($"C:\\Users\\Public\\Gridworld_Heuristics");
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, false))
+                {//Overwrites existing files
                     file.WriteLine(buffer.ToString());
                 }
                 //Create file that has the world map and start/end pairs.

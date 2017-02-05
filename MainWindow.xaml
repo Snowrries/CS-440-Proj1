@@ -7,6 +7,50 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="1200" Width="1800">
     <Grid>
-        
+        <Grid Name="Map">
+        </Grid>
+        <StackPanel Name="Panel" Width="200" HorizontalAlignment="Right">
+
+            <TextBlock Padding="10" FontSize="14">Algorithm details</TextBlock>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">Algo:</TextBlock>
+                <ComboBox Name="Algo" Padding="10" FontSize ="14" Width="130"></ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">Weight:</TextBlock>
+                <TextBox Name="Weight" Padding="10" FontSize ="14" Width="120"></TextBox>
+            </StackPanel>
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">f:</TextBlock>
+                <TextBlock Name ="f" Padding="10" FontSize="14" Width="130"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">g:</TextBlock>
+                <TextBlock Name="g" Padding="10" FontSize="14" Width="130"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">h:</TextBlock>
+                <TextBlock Name="h" Padding="10" FontSize="14" Width="130"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">Runtime:</TextBlock>
+                <TextBlock Name="runtime" Padding="10" FontSize="14" Width="110"></TextBlock>
+            </StackPanel>
+
+            <TextBlock Padding="10" FontSize="14">Start End Pairs:</TextBlock>
+            <ComboBox Name="StartEndPairs" Padding="10" FontSize ="14" Width="130" SelectionChanged="StartEndPairs_SelectionChanged"></ComboBox>
+            <TextBlock Padding="10" FontSize="14">Map Selection:</TextBlock>
+            <ComboBox Name="MapSelect" Padding="10" FontSize ="14" Width="130" SelectionChanged="MapSelect_SelectionChanged"
+                      ItemsSource="{Binding MapList}"></ComboBox>
+            <TextBlock Padding=" 5"></TextBlock>
+            <Button Name="Generate" Click="Generate_Click" Padding="10">Generate new worlds</Button>
+            <TextBlock Padding=" 3"></TextBlock>
+            <Button Name="Calculate" Click="Calculate_Click" Padding="10">Calculate Path</Button>
+
+
+        </StackPanel>
+
     </Grid>
 </Window>
