@@ -153,7 +153,7 @@ public class AStarSearch
 {
     public Dictionary<GridPOS, GridPOS> cameFrom
        = new Dictionary<GridPOS, GridPOS>();
-    public Dictionary<GridPOS, double> costSoFar
+    public Dictionary<GridPOS, double> g
         = new Dictionary<GridPOS, double>(); //also works as the closed set.
     private Stopwatch sw;
     WeightedGraph<Location> graph;
@@ -168,7 +168,8 @@ public class AStarSearch
         start = new GridPOS(startPOS[0], startPOS[1]);
         goal = new GridPOS(GoalPOS[0], GoalPOS[1]);
         openSet = new PrioirtyQueue<GridPOS>(start, 0);
-        costSoFar[start] = 0;
+        g[start] = 0;
+        cameFrom[start] = start;
     }
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase, int Weight)
 	{
@@ -177,15 +178,21 @@ public class AStarSearch
         goal = new GridPOS(GoalPOS[0], GoalPOS[1]);
         openSet = new PrioirtyQueue<GridPOS>(start, 0);
         wValue = Weight;
-        costSoFar[start] = 0;
+        g[start] = 0;
+        cameFrom[start] = start;
     }
-    public int Heuristic(GridPOS next, GridPOS goal)
+    public double Heuristic(GridPOS next, GridPOS goal)
     {
         //add case stuff here
+        if(hCase == 1)
+        {
+            return Math.Sqrt(Math.Pow(next.col - goal.col, 2.0) + Math.Pow(next.row - goal.row, 2.0));
+        }
         return 0;
     }
     public bool AStarSearchEx()
     {
+        
         sw = Stopwatch.StartNew();
         while (openSet.Count > 0)
         {
@@ -197,14 +204,14 @@ public class AStarSearch
             }
             foreach (var next in graph.Neighbors(current))
             {
-                double newCost = costSoFar[current]
+                double newCost = g[current]
                     + graph.Cost(current, next);
-                if (!costSoFar.ContainsKey(next)
-                    || newCost < costSoFar[next])
+                if (!g.ContainsKey(next)
+                    || newCost < g[next])
                 {
-                    costSoFar[next] = newCost;
-                    double priority = newCost + Heuristic(next, goal);
-                    openSet.Enqueue(next, priority);
+                    g[next] = newG;
+                    double f = newG + Heuristic(next, goal);
+                    openSet.Enqueue(next, f);
                     cameFrom[next] = current;
                 }
             }
