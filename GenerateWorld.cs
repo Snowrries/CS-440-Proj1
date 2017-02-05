@@ -205,6 +205,7 @@ namespace Gridworld_Heuristics
                     createPair(gp);
                     //ToDo: Determine if there is a valid path from sp to gp
                     //If valid, set incomplete to false.
+                    incomplete = false; // For now, just assume it works, so that we can test output.
                 }
 
             }
@@ -226,7 +227,7 @@ namespace Gridworld_Heuristics
             pair[0] = x;
             pair[1] = y;
         }
-        static void main()
+        static void generateWorld()
         {
             for (int i = 0; i < 5; i++)
             {
@@ -251,25 +252,27 @@ namespace Gridworld_Heuristics
                     for(int k = 0; k < 160; k++)
                     {
                         //Process each character individually
+                        //Can Optimize by using a lookup table.
                         switch (world[j, k])
                         {
                             case 0:
-                                buffer.Append("0");
+                                buffer.Append("0,");
                                 break;
                             case 1:
-                                buffer.Append("1");
+                                buffer.Append("1,");
                                 break;
                             case 2:
-                                buffer.Append("2");
+                                buffer.Append("2,");
                                 break;
                             case 3:
-                                buffer.Append("a");
+                                buffer.Append("a,");
                                 break;
                             case 4:
-                                buffer.Append("b");
+                                buffer.Append("b,");
                                 break;
                         }
                     }
+                    buffer.AppendLine();
                 }
 
                 string filename = $"C:\\Users\\Public\\Gridworld_Heuristics\\world_{i}";
