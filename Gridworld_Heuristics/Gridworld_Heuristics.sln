@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gridworld_Heuristics", "Gridworld_Heuristics\Gridworld_Heuristics.csproj", "{F7850647-107F-47E2-A1AF-7C8E8CEC4D57}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F7850647-107F-47E2-A1AF-7C8E8CEC4D57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7850647-107F-47E2-A1AF-7C8E8CEC4D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7850647-107F-47E2-A1AF-7C8E8CEC4D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7850647-107F-47E2-A1AF-7C8E8CEC4D57}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

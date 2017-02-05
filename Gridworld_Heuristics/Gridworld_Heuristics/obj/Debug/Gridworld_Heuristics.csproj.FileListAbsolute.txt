@@ -1,0 +1,14 @@
+c:\users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\bin\Debug\Gridworld_Heuristics.exe.config
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\bin\Debug\Gridworld_Heuristics.exe
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\bin\Debug\Gridworld_Heuristics.pdb
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.csprojResolveAssemblyReference.cache
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\MainWindow.g.cs
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\App.g.cs
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics_MarkupCompile.cache
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics_MarkupCompile.lref
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\MainWindow.baml
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.g.resources
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.Properties.Resources.resources
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.csproj.GenerateResource.Cache
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.exe
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.pdb
