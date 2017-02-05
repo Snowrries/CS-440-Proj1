@@ -25,6 +25,16 @@ public struct GridPOS
     {
         return new GridPOS(a.row - b.row, a.col - b.col);
     }
+    public override int GetHashCode()
+    {
+        unchecked // Overflow is fine, just wrap
+        {
+            int hash = 17;
+            hash = hash * 23 + row;
+            hash = hash * 23 + col;
+            return hash;
+        }
+    }
 }
 
 public class TwoDGrid : WeightedGraph<GridPOS>
@@ -144,28 +154,61 @@ public class AStarSearch
     public Dictionary<GridPOS, GridPOS> cameFrom
        = new Dictionary<GridPOS, GridPOS>();
     public Dictionary<GridPOS, double> costSoFar
-        = new Dictionary<GridPOS, double>();
+        = new Dictionary<GridPOS, double>(); //also works as the closed set.
     private Stopwatch sw;
     WeightedGraph<Location> graph;
     GridPOS start, goal;
     int hCase;
     int wValue = 1;
+    private PrioirtyQueue openSet;
 
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase)
 	{
         graph = new TwoDGrid(grid);
         start = new GridPOS(startPOS[0], startPOS[1]);
         goal = new GridPOS(GoalPOS[0], GoalPOS[1]);
-	}
+        openSet = new PrioirtyQueue<GridPOS>(start, 0);
+        costSoFar[start] = 0;
+    }
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase, int Weight)
 	{
         graph = new TwoDGrid(grid);
         start = new GridPOS(startPOS[0], startPOS[1]);
         goal = new GridPOS(GoalPOS[0], GoalPOS[1]);
+        openSet = new PrioirtyQueue<GridPOS>(start, 0);
         wValue = Weight;
+        costSoFar[start] = 0;
+    }
+    public int Heuristic(GridPOS next, GridPOS goal)
+    {
+        //add case stuff here
+        return 0;
     }
     public bool AStarSearchEx()
     {
-
+        sw = Stopwatch.StartNew();
+        while (openSet.Count > 0)
+        {
+            var current = openSet.pop();
+            if (current.Equals(goal))
+            {
+                sw.Stop();
+                return true;
+            }
+            foreach (var next in graph.Neighbors(current))
+            {
+                double newCost = costSoFar[current]
+                    + graph.Cost(current, next);
+                if (!costSoFar.ContainsKey(next)
+                    || newCost < costSoFar[next])
+                {
+                    costSoFar[next] = newCost;
+                    double priority = newCost + Heuristic(next, goal);
+                    openSet.Enqueue(next, priority);
+                    cameFrom[next] = current;
+                }
+            }
+        }
+        return false;
     }
 }
