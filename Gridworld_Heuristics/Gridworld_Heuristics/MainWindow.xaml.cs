@@ -22,18 +22,19 @@ namespace Gridworld_Heuristics
     {
         
         MainViewModel mvm = new MainViewModel();
+        Grid myGrid;
 
         public MainWindow()
         {
             this.DataContext = mvm;
             InitializeComponent();
             // Create the Grid
-            Grid myGrid = new Grid();
-            myGrid.Width = 1600;
-            myGrid.Height = 1200;
+            myGrid = new Grid();
+            myGrid.Width = 1280;
+            myGrid.Height = 960;
             myGrid.HorizontalAlignment = HorizontalAlignment.Left;
             myGrid.VerticalAlignment = VerticalAlignment.Top;
-            myGrid.ShowGridLines = true;
+            myGrid.ShowGridLines = false;
 
 
             // Define the Columns
@@ -58,35 +59,87 @@ namespace Gridworld_Heuristics
             //Create a dropdown to select different start/end pairs
             //Create a dropdown to select different maps
             //Use the Calculate button to reload the map for ease of programming
-
-            //below is example code on how to add items to a grid from Microsoft
-
-            // Add the final text cell to the Grid
-            TextBlock txt7 = new TextBlock();
-            Double db3 = new Double();
-            db3 = 150000;
-            txt7.Text = db3.ToString();
-            Grid.SetRow(txt7, 2);
-            Grid.SetColumn(txt7, 2);
             
-
-            // Add the TextBlock elements to the Grid Children collection
-            myGrid.Children.Add(txt7);
+            
 
             // Add the Grid as the Content of the Parent Window Object
             //this.Content = myGrid;
-            this.Map = myGrid;
+            this.Map.Content= myGrid;
             //this.Show();
             GridHelper.initData(mvm);
 
         }
 
+        private void Visualize()
+        {
+            SolidColorBrush whiteBrush = new SolidColorBrush();
+            whiteBrush.Color = Colors.White;
+            SolidColorBrush blackBrush = new SolidColorBrush();
+            blackBrush.Color = Colors.Black;
+            SolidColorBrush blueBrush = new SolidColorBrush();
+            blueBrush.Color = Colors.Aqua;
+            SolidColorBrush grayBrush = new SolidColorBrush();
+            grayBrush.Color = Colors.Gray;
+
+            for ( int i = 0; i < 120; i++)
+            {
+                for(int j = 0; j < 160; j++)
+                {
+                    Button chunk = new Button();
+                    switch (mvm.world[i, j])
+                    {
+                        case 0://Black
+                            chunk.Background= blackBrush;
+                            chunk.BorderThickness = new Thickness(0);
+                            break;
+                        case 1://White
+                            chunk.Background = whiteBrush;
+                            chunk.BorderThickness = new Thickness(0);
+                            break;
+                        case 2://Grey
+                            chunk.Background = grayBrush;
+                            chunk.BorderThickness = new Thickness(0);
+                            break;
+                        case 3://White with blue stripe
+                            chunk.Background = whiteBrush;
+                            chunk.BorderBrush= blueBrush;
+                            chunk.BorderThickness = new Thickness(1);
+                            break;
+                        case 4://Grey with blue stripe
+                            chunk.Background = grayBrush;
+                            chunk.BorderBrush = blueBrush;
+                            chunk.BorderThickness = new Thickness(1);
+                            break;
+
+                        default://??
+                            break;
+                    }
+                    chunk.Content = new int[] { i, j };
+                    chunk.Click += chunkClick;
+                    Grid.SetColumn(chunk, j);
+                    Grid.SetRow(chunk, i);
+                    myGrid.Children.Add(chunk);
+                }
+            }
+        }
+
+        private void chunkClick(object sender, RoutedEventArgs e)
+        {
+            Button clicked = (Button)sender;
+            int[] coordinates = (int[]) clicked.Content;
+            //Grab button coordinates
+            //Look up coordinates in the algorithm results
+            //Update fgh 
+        }
         private void Generate_Click(object sender, RoutedEventArgs e)
         {
             //Create the world.
             Gridworld_Heuristics.createWorld.generateWorld();
             //First load world 0.
             GridHelper.readInputs(0, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
+            //Visualize the world.
+            Visualize();
+
             mvm.RefreshPairs();
         }
 
@@ -131,6 +184,8 @@ namespace Gridworld_Heuristics
             //Reload the world. Update StartEndPairs
             int selection = MapSelect.SelectedIndex;
             GridHelper.readInputs(selection, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
+            //Visualize the world.
+            Visualize();
             mvm.RefreshPairs();
             //Recalculate Algorithm
         }

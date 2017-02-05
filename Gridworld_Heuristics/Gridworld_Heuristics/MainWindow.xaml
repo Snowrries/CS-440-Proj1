@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gridworld_Heuristics"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1200" Width="1800">
+        Title="MainWindow" Height="960" Width="1480">
     <Grid>
-        <Grid Name="Map">
-        </Grid>
+        <ContentControl Name="Map" Width="1600" HorizontalAlignment="Left">
+        </ContentControl>
         <StackPanel Name="Panel" Width="200" HorizontalAlignment="Right">
 
             <TextBlock Padding="10" FontSize="14">Algorithm details</TextBlock>
@@ -21,7 +21,7 @@
                 <TextBlock Padding="10" FontSize="14">Weight:</TextBlock>
                 <TextBox Name="Weight" Padding="10" FontSize ="14" Width="120"></TextBox>
             </StackPanel>
-            
+
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">f:</TextBlock>
                 <TextBlock Text="{Binding Path=f}" Padding="10" FontSize="14" Width="130"></TextBlock>
