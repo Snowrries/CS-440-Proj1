@@ -162,8 +162,8 @@ public class AStarSearch
 {
     public Dictionary<GridPOS, GridPOS> cameFrom
        = new Dictionary<GridPOS, GridPOS>();
-    public Dictionary<GridPOS, float> g
-        = new Dictionary<GridPOS, float>(); //also works as the closed set.
+    public Dictionary<GridPOS, float[]> g
+        = new Dictionary<GridPOS, float[]>(); //also works as the closed set.
     private Stopwatch sw;
     WeightedGraph<GridPOS> graph;
     GridPOS start, goal;
@@ -179,7 +179,7 @@ public class AStarSearch
         openSet = new SimplePriorityQueue<GridPOS>();
         openSet.Enqueue(start, 0);
         hCase = heruisticCase;
-        g[start] = 0;
+        g[start] = new float[]{0,0};
         cameFrom[start] = start;
     }
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase, int Weight)
@@ -191,7 +191,7 @@ public class AStarSearch
         openSet.Enqueue(start, 0);
         hCase = heruisticCase;
         wValue = Weight;
-        g[start] = 0;
+        g[start] = new float[] { 0, 0 };
         cameFrom[start] = start;
     }
     public float Heuristic(GridPOS next, GridPOS goal)
@@ -218,13 +218,18 @@ public class AStarSearch
             }
             foreach (var next in graph.Neighbors(current))
             {
-                float newG = g[current]
+                float newG = g[current][0]
                     + graph.Cost(current, next);
                 if (!g.ContainsKey(next)
-                    || newG < g[next])
+                    || newG < g[next][0])
                 {
-                    g[next] = newG;
-                    float f = newG + Heuristic(next, goal);
+                    if (!g.ContainsKey(next))
+                    {
+                        g[next] = new float[2];
+                    }
+                    g[next][0] = newG;
+                    g[next][1] = wValue*Heuristic(next, goal);
+                    float f = newG + wValue* g[next][1];
                     openSet.Enqueue(next, f);
                     cameFrom[next] = current;
                 }
@@ -253,7 +258,7 @@ public class test
         foreach (var entry in aSearch.cameFrom)
         {
             
-            Debug.WriteLine(entry.Value.ToString());
+            Debug.WriteLine(entry.Key.ToString()+ entry.Value.ToString());
         }
     }
 
