@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="960" Width="1480">
     <Grid>
-        <ContentControl Name="Map" Width="1600" HorizontalAlignment="Left">
+        <ContentControl Name="Map" Width="1280" HorizontalAlignment="Left">
         </ContentControl>
         <StackPanel Name="Panel" Width="200" HorizontalAlignment="Right">
 
@@ -36,7 +36,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Runtime:</TextBlock>
-                <TextBlock Name="runtime" Padding="10" FontSize="14" Width="110"></TextBlock>
+                <TextBlock Name="runtime" Text="{Binding Path=Runtime}" Padding="10" FontSize="14" Width="110"></TextBlock>
             </StackPanel>
 
             <TextBlock Padding="10" FontSize="14">Start End Pairs:</TextBlock>

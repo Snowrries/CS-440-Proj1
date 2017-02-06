@@ -69,8 +69,8 @@ namespace Gridworld_Heuristics
             }
         }
         
-        private int f_;
-        public int f {
+        private float f_;
+        public float f {
             get { return f_; }
             set
             {
@@ -78,10 +78,12 @@ namespace Gridworld_Heuristics
                 OnPropertyChanged("f");
             }
         }
-        private int g_;
-        public int g { get { return g_; } set { g_ = value; OnPropertyChanged("g"); } }
-        private int h_;
-        public int h { get { return h_; } set { h_ = value; OnPropertyChanged("h"); } }
+        private float g_;
+        public float g { get { return g_; } set { g_ = value; OnPropertyChanged("g"); } }
+        private float h_;
+        public float h { get { return h_; } set { h_ = value; OnPropertyChanged("h"); } }
+        private float runtime;
+        public float Runtime { get { return runtime; } set { runtime = value; OnPropertyChanged("Runtime"); } }
 
         public int[,] startPairs = new int[10, 2];
         public int[,] endPairs = new int[10, 2];
