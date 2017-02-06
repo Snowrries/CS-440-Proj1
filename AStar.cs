@@ -162,9 +162,11 @@ public class AStarSearch
 {
     public Dictionary<GridPOS, GridPOS> cameFrom
        = new Dictionary<GridPOS, GridPOS>();
-    public Dictionary<GridPOS, float[]> g
-        = new Dictionary<GridPOS, float[]>(); //also works as the closed set.
-    private Stopwatch sw;
+    public Dictionary<GridPOS, float> g
+        = new Dictionary<GridPOS, float>(); //also works as the closed set.
+    public Dictionary<GridPOS, float[]> gh
+        = new Dictionary<GridPOS, float[]>(); //I would like to store h as well. 
+    public Stopwatch sw;
     WeightedGraph<GridPOS> graph;
     GridPOS start, goal;
     int hCase;
@@ -179,7 +181,8 @@ public class AStarSearch
         openSet = new SimplePriorityQueue<GridPOS>();
         openSet.Enqueue(start, 0);
         hCase = heruisticCase;
-        g[start] = new float[]{0,0};
+        g[start] = 0;
+        gh[start] = new float[] { 0, 0 };
         cameFrom[start] = start;
     }
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase, int Weight)
@@ -191,7 +194,8 @@ public class AStarSearch
         openSet.Enqueue(start, 0);
         hCase = heruisticCase;
         wValue = Weight;
-        g[start] = new float[] { 0, 0 };
+        g[start] = 0;
+        gh[start] = new float[] { 0, 0 };
         cameFrom[start] = start;
     }
     public float Heuristic(GridPOS next, GridPOS goal)
@@ -218,18 +222,15 @@ public class AStarSearch
             }
             foreach (var next in graph.Neighbors(current))
             {
-                float newG = g[current][0]
+                float newG = g[current]
                     + graph.Cost(current, next);
                 if (!g.ContainsKey(next)
-                    || newG < g[next][0])
+                    || newG < g[next])
                 {
-                    if (!g.ContainsKey(next))
-                    {
-                        g[next] = new float[2];
-                    }
-                    g[next][0] = newG;
-                    g[next][1] = wValue*Heuristic(next, goal);
-                    float f = newG + wValue* g[next][1];
+                    g[next] = newG;
+                    float h = Heuristic(next, goal);
+                    gh[next] = new float[] { newG, h }; //I want to store g and h.
+                    float f = newG + h;
                     openSet.Enqueue(next, f);
                     cameFrom[next] = current;
                 }
@@ -238,7 +239,7 @@ public class AStarSearch
         sw.Stop();
         return false;
     }
-}
+}/*
 public class test
 {
     static void Main()
@@ -258,8 +259,8 @@ public class test
         foreach (var entry in aSearch.cameFrom)
         {
             
-            Debug.WriteLine(entry.Key.ToString()+ entry.Value.ToString());
+            Debug.WriteLine(entry.Value.ToString());
         }
     }
 
-}
+}*/

@@ -208,8 +208,14 @@ namespace Gridworld_Heuristics
                     createPair(gp);
                     //ToDo: Determine if there is a valid path from sp to gp
                     //If valid, set incomplete to false.
-                    incomplete = false; // For now, just assume it works, so that we can test output.
+                    AStarSearch aSearch = new AStarSearch(world, sp, gp, 0);
+                    bool result = aSearch.AStarSearchEx();
+                    incomplete = !result; // For now, just assume it works, so that we can test output.
                 }
+                startPairs[i, 0] = sp[0];
+                startPairs[i, 1] = sp[1];
+                endPairs[i, 0] = gp[0];
+                endPairs[i, 1] = gp[1];
 
             }
         }
