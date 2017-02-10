@@ -14,3 +14,4 @@ C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristi
 C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.csproj.GenerateResource.Cache
 C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.exe
 C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.pdb
+C:\Users\infer\onedrive\documents\visual studio 2015\Projects\Gridworld_Heuristics\Gridworld_Heuristics\obj\Debug\Gridworld_Heuristics.csprojResolveAssemblyReference.cache

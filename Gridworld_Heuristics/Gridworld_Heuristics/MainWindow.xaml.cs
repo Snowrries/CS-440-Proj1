@@ -81,7 +81,9 @@ namespace Gridworld_Heuristics
             blueBrush.Color = Colors.Aqua;
             SolidColorBrush grayBrush = new SolidColorBrush();
             grayBrush.Color = Colors.Gray;
-
+            Thickness noBorder = new Thickness(0);
+            Thickness thinBorder = new Thickness(1);
+            
             for ( int i = 0; i < 120; i++)
             {
                 for(int j = 0; j < 160; j++)
@@ -91,25 +93,25 @@ namespace Gridworld_Heuristics
                     {
                         case 0://Black
                             chunk.Background= blackBrush;
-                            chunk.BorderThickness = new Thickness(0);
+                            chunk.BorderThickness = noBorder;
                             break;
                         case 1://White
                             chunk.Background = whiteBrush;
-                            chunk.BorderThickness = new Thickness(0);
+                            chunk.BorderThickness = noBorder;
                             break;
                         case 2://Grey
                             chunk.Background = grayBrush;
-                            chunk.BorderThickness = new Thickness(0);
+                            chunk.BorderThickness = noBorder;
                             break;
                         case 3://White with blue stripe
                             chunk.Background = whiteBrush;
                             chunk.BorderBrush= blueBrush;
-                            chunk.BorderThickness = new Thickness(1);
+                            chunk.BorderThickness = thinBorder;
                             break;
                         case 4://Grey with blue stripe
                             chunk.Background = grayBrush;
                             chunk.BorderBrush = blueBrush;
-                            chunk.BorderThickness = new Thickness(1);
+                            chunk.BorderThickness = thinBorder;
                             break;
 
                         default://??
