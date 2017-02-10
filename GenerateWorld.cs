@@ -22,10 +22,10 @@ namespace Gridworld_Heuristics
             int direction = cPair.Next(4);
             int x = cPair.Next(120);
             int y = cPair.Next(160);
-            if (direction == 0) x = 119;
-            else if (direction == 1) y = 0;
-            else if (direction == 2) x = 0;
-            else y = 159;
+            if (direction == 0) y = 159;
+            else if (direction == 1) x = 119;
+            else if (direction == 2) y = 0;
+            else x = 0;
             points[0] = x;
             points[1] = y;
             return direction;
@@ -48,8 +48,8 @@ namespace Gridworld_Heuristics
                 // If we're at the east border, 1 will mean we head south. Etc.
 
 
-                heading = (direction + orientation + 1) % 3;
-                //If we add the orientation to the direction and 1, then mod by 3, 
+                heading = (direction + orientation + 1) % 4;
+                //If we add the orientation to the direction and 1, then mod by 4, 
                 //we will obtain the direction that is not going straight out of bounds.
             }
             else
@@ -61,21 +61,21 @@ namespace Gridworld_Heuristics
                 heading = direction;
                 if (roll == 3)
                 {
-                    heading = (direction - 1) % 3;
+                    heading = (direction + 1) % 4;
                 }
                 else if (roll == 4)
                 {
-                    heading = (direction + 1) % 3;
+                    heading = (direction - 1) % 4;
                 }
             }
 
             if (heading == 0)
-            { incx = 1; incy = 0; }
+            { incx = 0; incy = 1; }
             else if (heading == 1)
-            { incx = 0; incy = -1; }
+            { incx = 1; incy = 0; }
             else if (heading == 2)
-            { incx = -1; incy = 0; }
-            else { incx = 0; incy = 1; }
+            { incx = 0; incy = -1; }
+            else { incx = -1; incy = 0; }
             incPair[0] = incx;
             incPair[1] = incy;
 
@@ -85,11 +85,12 @@ namespace Gridworld_Heuristics
 
         static void create()
         {
+
             int xpair, ypair;
+            //Obstacle cost = 0
             //white cost = 1
-            //Obstacle cost = -1
             //Dark cost = 2
-            //Highway cost = .25
+            //Highway numbers 3 or 4
             for (int i = 0; i < 120; i++)
             {
                 for (int j = 0; j < 160; j++)
@@ -98,6 +99,7 @@ namespace Gridworld_Heuristics
                 }
             }
             Random cPair = new Random();
+            //Create 8 centers of difficult to traverse patches.
             for (int i = 0; i < 8; i++)
             {
                 xpair = cPair.Next(120);
@@ -113,64 +115,97 @@ namespace Gridworld_Heuristics
                     }
                 }
             }
-            bool highwayConstruction = true;
+            //Start creating 4 highways.
+            bool highwayConstruction;
             int direction;
             int[] border = new int[2];
-            int incx, incy;
-            bool hit;
-            int counter;
             int[] incPair = new int[2];
-            int heading;
+            bool hit;
+            int failsafe = 0;
+            int counter, heading, incx, incy;
             int[,] tempworld =(int[,])world.Clone();
-            
-            while (highwayConstruction)
-            {
-                tempworld = (int[,])world.Clone();
-                //East is 0, South is 1, West is 2, North is 3.
-                direction = randomBorder(border);
-                // produces a random border point. Return value will be the cardinal direction of the border.
-                hit = false;
-                heading = determineHeading(incPair, direction, true);
-                incx = incPair[0];
-                incy = incPair[1];
+            int xpos, ypos;
 
-                counter = 0;
-                while (!hit)
-                {
-                    for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 4; i++)
+            {
+                highwayConstruction = true;
+                while (highwayConstruction)
+                {//Continue until we hit a boundary, then check how far we've gone.
+                    //Copy the world so we may revert to a previous state if the river construction fails.
+                    int[,] tempworld2 = (int[,])tempworld.Clone();
+                    //East is 0, South is 1, West is 2, North is 3.
+                    //Origin is at top left. Y grows horizontally, x grows vertically.
+                    // randomBorder produces a random border point. Return value will be the cardinal direction of the border.
+                    direction = randomBorder(border);
+                    xpos = border[0];
+                    ypos = border[1];
+                    hit = false;
+                    //When the third parameter of this method is true, 
+                    //we roll evenly between the three directions not specified by 'direction'
+                    //Then we store the results in incPair.
+                    heading = determineHeading(incPair, direction, true);
+                    incx = incPair[0];
+                    incy = incPair[1];
+                    counter = 0;
+                    while (!hit) //Continue in a striaght line for 20 steps, and repeat until we hit a boundary
                     {
-                        if (border[0] > -1 && border[0] < 120 && border[1] > -1 && border[1] < 160)
-                        {// Checking to see if we're in bounds. Possibly inefficient, may be optimized.
-                            if (tempworld[border[0], border[1]] > 2)
-                            {   //Restart process. We hit a highway. 
-                                hit = true;
-                                counter = 0;
-                                break;
+                        for (int w = 0; w < 20; w++)
+                        {
+                            if (xpos > -1 && xpos < 120 && ypos > -1 && ypos < 160)
+                            {// Checking to see if we're in bounds. Possibly inefficient, may be optimized.
+                                if (tempworld2[xpos, ypos] > 2)
+                                {   //Restart process. We hit a highway. 
+                                    hit = true;
+                                    counter = 0;
+                                    failsafe++; //We're bound to hit highways because of RNG at some point, 
+                                                //but if it's excessive, we'll just start over.
+                                    break;
+                                }
+                                else
+                                {
+                                    tempworld2[xpos, ypos] += 2;
+                                    // Normal highway will be 3, Hard to traverse highway will be 4;
+                                }
+                                xpos += incx;
+                                ypos += incy;
+                                counter++;
                             }
                             else
                             {
-                                tempworld[border[0], border[1]] += 2;
-                                // Normal highway will be 3, Hard to traverse highway will be 4;
+                                hit = true;
+                                break;
                             }
-                            border[0] += incx;
-                            border[1] += incy;
-                            counter++;
                         }
-                        else hit = true;
+                        //Calculate the next heading
+
+                        heading = determineHeading(incPair, heading, false);
+                        incx = incPair[0];
+                        incy = incPair[1];
+
                     }
-                    //Calculate the next heading
 
-                    heading = determineHeading(incPair, heading, false);
-                    incx = incPair[0];
-                    incy = incPair[1];
-
+                    if (counter > 99)
+                    {
+                        highwayConstruction = false;
+                        // Highway built successfully!
+                        failsafe = 0;
+                        //If we made a highway successfully, let's be more lenient.
+                        //Also, save progress.
+                        tempworld = (int[,])tempworld2.Clone();
+                    }
+                    if(failsafe > 50)
+                    {
+                        //If we fail more than 50 times, then just reset.
+                        failsafe = 0;
+                        tempworld = (int[,])world.Clone();
+                        i = 0;
+                        //This is also the reason why we need to keep two temp copies. 
+                        //If we keep running into highways, we will want to reset the failcount, and start the process anew
+                    }
                 }
-
-                if (counter > 99) highwayConstruction = false;
-
             }
-            //Highway is constructed.
             world = (int[,])tempworld.Clone();
+            //Highway is constructed.
             //Generate impassable terrain
             bool repeat;
             int x;
@@ -210,7 +245,7 @@ namespace Gridworld_Heuristics
                     //If valid, set incomplete to false.
                     AStarSearch aSearch = new AStarSearch(world, sp, gp, 0);
                     bool result = aSearch.AStarSearchEx();
-                    incomplete = !result; // For now, just assume it works, so that we can test output.
+                    incomplete = result; // For now, just assume it works, so that we can test output.
                 }
                 startPairs[i, 0] = sp[0];
                 startPairs[i, 1] = sp[1];
