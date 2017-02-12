@@ -74,6 +74,60 @@ namespace Gridworld_Heuristics
 
         public float computeHeuristic(int heuristic, int cx, int cy, int endx, int endy)
         {
+            if(heuristic == 0)
+            {
+                //Euclidian
+                return (float) Math.Sqrt(Math.Pow(cx - endx, 2) + Math.Pow(cy - endy, 2));
+            }
+            else if (heuristic == 1)
+            {
+                //Manhattan (all 1)
+                return (float)(Math.Abs(cx - endx) + Math.Abs(cy - endy));
+            }
+            else if (heuristic == 2)
+            {
+                //Manhattan (all .25)
+                return (float)(Math.Abs(cx - endx) + Math.Abs(cy - endy)/4);
+            }
+            else if (heuristic == 3)
+            {
+                //Octal, assume all highway.
+                float a = Math.Abs(cx - endx);
+                float b = Math.Abs(cy - endy);
+                float cost;
+                if (a < b)
+                {
+                    cost = a * 1.41421356237f;
+                    cost += (b - a) * .25f;
+                }
+                else
+                {
+                    cost = b * 1.41421356237f;
+                    cost += (a - b) * .25f;
+                }
+                return cost;
+
+            }
+            else if (heuristic == 4)
+            {
+                //Chebyshev, assume all highway.
+                float a = Math.Abs(cx - endx);
+                float b = Math.Abs(cy - endy);
+                float cost;
+                if (a < b)
+                {
+                    cost = a * .25f;
+                    cost += (b - a) * .25f;
+                }
+                else
+                {
+                    cost = b * .25f;
+                    cost += (a - b) * .25f;
+                }
+                return cost;
+
+            }
+
             return 0;
         }
 
