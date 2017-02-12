@@ -15,11 +15,15 @@
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Algo:</TextBlock>
-                <ComboBox Name="Algo" ItemsSource ="{Binding Path=Algos}" Padding="10" FontSize ="14" Width="130"></ComboBox>
+                <ComboBox Name="Algo" SelectedIndex="0" ItemsSource ="{Binding Path=Algos}" Padding="10" FontSize ="14" Width="130"></ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">Heuristic:</TextBlock>
+                <ComboBox Name="Heuristic" SelectedIndex="0" ItemsSource ="{Binding Path=Heuristic}" Padding="10" FontSize ="14" Width="130"></ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Weight:</TextBlock>
-                <TextBox Name="Weight" Padding="10" FontSize ="14" Width="120"></TextBox>
+                <TextBox Name="Weight" Text ="1" Padding="10" FontSize ="14" Width="120"></TextBox>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
@@ -42,10 +46,11 @@
             <TextBlock Padding="10" FontSize="14">Start End Pairs:</TextBlock>
             <ComboBox Name="StartEndPairs" ItemsSource ="{Binding PairList}" Padding="10" FontSize ="14" Width="130" 
                       DataContextChanged="StartEndPairs_DataContextChanged"
+                      SelectedIndex="0" 
                       SelectionChanged="StartEndPairs_SelectionChanged"></ComboBox>
             <TextBlock Padding="10" FontSize="14">Map Selection:</TextBlock>
             <ComboBox Name="MapSelect" Padding="10" FontSize ="14" Width="130" SelectionChanged="MapSelect_SelectionChanged"
-                      ItemsSource="{Binding Path=MapList}"></ComboBox>
+                      SelectedIndex="0" ItemsSource="{Binding Path=MapList}"></ComboBox>
             <TextBlock Padding=" 5"></TextBlock>
             <Button Name="Generate" Click="Generate_Click" Padding="10">Generate new worlds</Button>
             <TextBlock Padding=" 3"></TextBlock>

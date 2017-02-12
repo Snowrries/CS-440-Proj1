@@ -9,20 +9,21 @@ namespace Gridworld_Heuristics
 {
     class Naiive
     {
-        MainViewModel mvm;
+        int[,] world;
         SimplePriorityQueue<int[], float> fringe;
         int[,] closedList;
-        float[,] g;
-        List<float[]> parents;//[x,y,f,g,h]
+        public float[,] g;
+        public List<float[]> parents;//[x,y,f,g,h]
 
-        Naiive(MainViewModel pmvm)
+        public Naiive(int[,] world)
         {
-            mvm = pmvm;
+            this.world = world;
         }
 
 
         // Returns true if goal node is found. Returns false if no goal node is found.
-        bool hSearch(int heuristic, int startx, int starty,
+        // To do: Add options to select algorithms. Track runtime.
+        public bool hSearch(int heuristic, int startx, int starty,
             int endx, int endy)
         {
             int cx = startx;
@@ -35,6 +36,7 @@ namespace Gridworld_Heuristics
             fringe = new SimplePriorityQueue<int[], float>();
             closedList = new int[120, 160];
             parents = new List<float[]>();
+            g = new float[120, 160];
 
             fringe.Enqueue(new int[2] { cx, cy }, g[startx,starty] + h);
 
@@ -74,6 +76,7 @@ namespace Gridworld_Heuristics
 
         public float computeHeuristic(int heuristic, int cx, int cy, int endx, int endy)
         {
+            //Can be slightly optimized with a switch statement
             if(heuristic == 0)
             {
                 //Euclidian
@@ -144,8 +147,8 @@ namespace Gridworld_Heuristics
         }
         float cost(int x, int y, int nx, int ny)
         {
-            int start = mvm.world[x, y];
-            int next = mvm.world[nx, ny];
+            int start = world[x, y];
+            int next = world[nx, ny];
             float cost = 0;
             float multiplier = 1;
             //Assume start and next are both valid (not impassable)

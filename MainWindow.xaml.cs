@@ -22,9 +22,11 @@ namespace Gridworld_Heuristics
     {
         
         MainViewModel mvm = new MainViewModel();
-        Grid myGrid;
-        AStarSearch aSearch;
 
+
+        Grid myGrid;
+        //AStarSearch aSearch;
+        Naiive search;
         public MainWindow()
         {
             this.DataContext = mvm;
@@ -160,8 +162,8 @@ namespace Gridworld_Heuristics
             //Check what the algorithms dropdown selection is, and the weight for the heuristic.
             //Perform algorithm on the loaded world and one particular start/end pair.
             //Update Runtime
-            aSearch = recalculateAlgorithm();
-            mvm.Runtime = aSearch.sw.ElapsedTicks;
+            //aSearch = recalculateAlgorithm();
+            //mvm.Runtime = aSearch.sw.ElapsedTicks;
 
         }
 
@@ -175,68 +177,73 @@ namespace Gridworld_Heuristics
             mvm.RefreshPairs();
             //Recalculate Algorithm
 
-            AStarSearch aSearch = new AStarSearch(mvm.world, new int[] { mvm.startPairs[0, 0], mvm.startPairs[0, 1] },
-                new int[] { mvm.endPairs[0, 0], mvm.endPairs[0, 1] }, 0);
-            bool result = aSearch.AStarSearchEx();
+            //AStarSearch aSearch = new AStarSearch(mvm.world, new int[] { mvm.startPairs[0, 0], mvm.startPairs[0, 1] },
+            //    new int[] { mvm.endPairs[0, 0], mvm.endPairs[0, 1] }, 0);
+            //bool result = aSearch.AStarSearchEx();
+            search = new Naiive(mvm.world);
+            bool result = search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
+
         }
 
         private void StartEndPairs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            
+
             //Update Map display path highlights
             //Update Map displayed Start/goal pair
-
+            recalculateAlgorithm();
+            
         }
 
+        //May not need this function.
         private void StartEndPairs_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
 
         }
-        private AStarSearch recalculateAlgorithm()
+        private void recalculateAlgorithm()
         {
             SolidColorBrush whiteBrush = new SolidColorBrush();
             whiteBrush.Color = Colors.White;
             SolidColorBrush blackBrush = new SolidColorBrush();
             blackBrush.Color = Colors.Black;
-            SolidColorBrush blueBrush = new SolidColorBrush();
-            blueBrush.Color = Colors.Aqua;
+            SolidColorBrush chartreuseBrush = new SolidColorBrush();
+            chartreuseBrush.Color = Colors.Chartreuse;
+            SolidColorBrush beigeBrush = new SolidColorBrush();
+            beigeBrush.Color = Colors.Beige;
             SolidColorBrush grayBrush = new SolidColorBrush();
             grayBrush.Color = Colors.Gray;
             SolidColorBrush pathBrush = new SolidColorBrush();
             grayBrush.Color = Colors.BlueViolet;
+            SolidColorBrush startBrush = new SolidColorBrush();
+            startBrush.Color = Colors.Green;
+            SolidColorBrush endBrush = new SolidColorBrush();
+            endBrush.Color = Colors.Red;
 
-            //Rerun the algorithm, update fgh+runtime
+            //Rerun the algorithm, update runtime
             int pairIdx = StartEndPairs.SelectedIndex;
 
-            AStarSearch aSearch = new AStarSearch(mvm.world, new int[] { mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1] },
-                new int[] { mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1] }, Algo.SelectedIndex);
-            bool result = aSearch.AStarSearchEx();
-            //Interpret aSearch data.
-            foreach (GridPOS a in aSearch.gh.Keys)
+            search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+                mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+
+            //Interpret search data.
+            foreach (float[] a in search.parents)//[x,y,f,g,h]
             {
                 Button chunk = new Button();
-                switch (mvm.world[a.row, a.col])
+                switch (mvm.world[(int)a[0], (int)a[1]])
                 {
                     case 0://Black
                         //Should never get here.
                         break;
                     case 1://White
                         chunk.Background = whiteBrush;
-                        chunk.BorderThickness = new Thickness(0);
                         break;
                     case 2://Grey
                         chunk.Background = grayBrush;
-                        chunk.BorderThickness = new Thickness(0);
                         break;
-                    case 3://White with blue stripe
-                        chunk.Background = whiteBrush;
-                        chunk.BorderBrush = blueBrush;
-                        chunk.BorderThickness = new Thickness(1);
+                    case 3://white river
+                        chunk.Background = chartreuseBrush;
                         break;
-                    case 4://Grey with blue stripe
-                        chunk.Background = grayBrush;
-                        chunk.BorderBrush = blueBrush;
-                        chunk.BorderThickness = new Thickness(1);
+                    case 4://Grey river
+                        chunk.Background = beigeBrush;
                         break;
 
                     default://??
@@ -244,15 +251,48 @@ namespace Gridworld_Heuristics
                 }
                 chunk.BorderBrush = pathBrush;
                 chunk.BorderThickness = new Thickness(1);
-                chunk.Content = new int[] { a.row, a.col };
+                chunk.Content = new int[] { (int)a[0], (int)a[1] };
                 chunk.Click += chunkClick;
-                Grid.SetColumn(chunk, a.col);
-                Grid.SetRow(chunk, a.row);
+                Grid.SetColumn(chunk, (int)a[0]);
+                Grid.SetRow(chunk, (int)a[1]);
                 myGrid.Children.Add(chunk);
             }
-            return aSearch;
+            //Update Start/end pair appearance
+            int sepIndex = StartEndPairs.SelectedIndex;
+            int startx = mvm.startPairs[0, 0];
+            int starty = mvm.startPairs[0, 1];
+            int endx = mvm.endPairs[0, 0];
+            int endy = mvm.endPairs[0, 1];
+            Button chunk = new Button();
+            switch ({mvm.world[StartEndPairs.SelectedIndex,)
+            {
+                case 0://Black
+                       //Should never get here.
+                    break;
+                case 1://White
+                    chunk.Background = whiteBrush;
+                    break;
+                case 2://Grey
+                    chunk.Background = grayBrush;
+                    break;
+                case 3://white river
+                    chunk.Background = chartreuseBrush;
+                    break;
+                case 4://Grey river
+                    chunk.Background = beigeBrush;
+                    break;
+
+                default://??
+                    break;
+            }
+            chunk.BorderBrush = startBrush;
+            chunk.BorderThickness = new Thickness(1);
+            chunk.Content = new int[] { (int)a[0], (int)a[1] };
+            chunk.Click += chunkClick;
+            Grid.SetColumn(chunk, (int)a[0]);
+            Grid.SetRow(chunk, (int)a[1]);
+            myGrid.Children.Add(chunk);
+
         }
-
-
     }
 }

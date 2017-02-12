@@ -15,9 +15,13 @@ namespace Gridworld_Heuristics
             mapList = new ObservableCollection<string> { "World_0", "World_1", "World_2", "World_3", "World_4", "World_5",
                 "World_6", "World_7", "World_8", "World_9", "World_10" };
             algos = new ObservableCollection<string> { "A*", "Weighted A*", "Uniform Cost" };
+            heuristic = new ObservableCollection<string> { "Euclidian", "Manhattan", "Manhattan/4", "Octal/4", "Chebyshev/4" };
             pairList = new ObservableCollection<string> { "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10" };
 
         }
+
+        public ObservableCollection<string> heuristic { get; private set; }
+
 
         private ObservableCollection<string> mapList;
         public ObservableCollection<string> MapList
@@ -93,7 +97,7 @@ namespace Gridworld_Heuristics
         public int tilex { get; set; } // Holds the column index of the clicked button
 
         public int tiley { get; set; }// Row index of clicked button
-
+        
         public void Calculate()
         {
 
