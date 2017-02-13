@@ -15,15 +15,11 @@ using System.Windows.Shapes;
 
 namespace Gridworld_Heuristics
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
+
     public partial class MainWindow : Window
     {
         
         MainViewModel mvm = new MainViewModel();
-
-
         Grid myGrid;
         //AStarSearch aSearch;
         Naiive search;
@@ -53,22 +49,11 @@ namespace Gridworld_Heuristics
                 RowDefinition row = new RowDefinition();
                 myGrid.RowDefinitions.Add(row);
             }
-
-
-            //To Do: Interpret the loaded data values of one map as input, and visualize it.
-            //Add colored blocks to the map based on the input, and make an onclick trigger to display heuristic information.
-            //Create a button to calculate the algorithm and check a dropdown box for what kind of algorithm to perform
-            //This button should load heuristic information into a datastructure and display runtimes
-            //Create a dropdown to select different start/end pairs
-            //Create a dropdown to select different maps
-            //Use the Calculate button to reload the map for ease of programming
             
+            //To Do: create a button to calculate the algorithm and check a dropdown box for what kind of algorithm to perform
             
-
             // Add the Grid as the Content of the Parent Window Object
-            //this.Content = myGrid;
             this.Map.Content= myGrid;
-            //this.Show();
             GridHelper.initData(mvm);
 
         }
@@ -132,13 +117,16 @@ namespace Gridworld_Heuristics
         {
             Button clicked = (Button)sender;
             int[] coordinates = (int[]) clicked.Content;
-            GridPOS clicked2 = new global::GridPOS(coordinates[0], coordinates[1]);
-            if (aSearch != null && aSearch.gh.ContainsKey(clicked2))
+
+            if (search != null)
             {
-                float[] gh = aSearch.gh[clicked2];
-                mvm.f = gh[0] + gh[1];
-                mvm.g = gh[0];
-                mvm.h = gh[1];
+                float[] result = search.parents.First(p => p[0] == coordinates[0] && p[1] == coordinates[1]);
+                if(result != null)
+                {
+                    mvm.f = result[2];
+                    mvm.g = result[3];
+                    mvm.h = result[4];
+                }
             }
             
             //Grab button coordinates
@@ -148,7 +136,7 @@ namespace Gridworld_Heuristics
         private void Generate_Click(object sender, RoutedEventArgs e)
         {
             //Create the world.
-            Gridworld_Heuristics.createWorld.generateWorld();
+            createWorld.generateWorld();
             //First load world 0.
             GridHelper.readInputs(0, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
             //Visualize the world.
@@ -162,8 +150,8 @@ namespace Gridworld_Heuristics
             //Check what the algorithms dropdown selection is, and the weight for the heuristic.
             //Perform algorithm on the loaded world and one particular start/end pair.
             //Update Runtime
-            //aSearch = recalculateAlgorithm();
-            //mvm.Runtime = aSearch.sw.ElapsedTicks;
+            recalculateAlgorithm();
+            mvm.Runtime = search.sw.ElapsedTicks;
 
         }
 
@@ -176,10 +164,7 @@ namespace Gridworld_Heuristics
             Visualize();
             mvm.RefreshPairs();
             //Recalculate Algorithm
-
-            //AStarSearch aSearch = new AStarSearch(mvm.world, new int[] { mvm.startPairs[0, 0], mvm.startPairs[0, 1] },
-            //    new int[] { mvm.endPairs[0, 0], mvm.endPairs[0, 1] }, 0);
-            //bool result = aSearch.AStarSearchEx();
+            
             search = new Naiive(mvm.world);
             bool result = search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
 
@@ -187,7 +172,6 @@ namespace Gridworld_Heuristics
 
         private void StartEndPairs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-
             //Update Map display path highlights
             //Update Map displayed Start/goal pair
             recalculateAlgorithm();
@@ -258,41 +242,59 @@ namespace Gridworld_Heuristics
                 myGrid.Children.Add(chunk);
             }
             //Update Start/end pair appearance
-            int sepIndex = StartEndPairs.SelectedIndex;
-            int startx = mvm.startPairs[0, 0];
-            int starty = mvm.startPairs[0, 1];
-            int endx = mvm.endPairs[0, 0];
-            int endy = mvm.endPairs[0, 1];
-            Button chunk = new Button();
-            switch ({mvm.world[StartEndPairs.SelectedIndex,)
+            int spi = StartEndPairs.SelectedIndex;
+            int startx = mvm.startPairs[spi, 0];
+            int starty = mvm.startPairs[spi, 1];
+            int endx = mvm.endPairs[spi, 0];
+            int endy = mvm.endPairs[spi, 1];
+
+            List<int> sep = new List<int> { mvm.world[startx, starty], mvm.world[endx, endy] };
+            int i = 0;
+            foreach (int a in sep)
             {
-                case 0://Black
-                       //Should never get here.
-                    break;
-                case 1://White
-                    chunk.Background = whiteBrush;
-                    break;
-                case 2://Grey
-                    chunk.Background = grayBrush;
-                    break;
-                case 3://white river
-                    chunk.Background = chartreuseBrush;
-                    break;
-                case 4://Grey river
-                    chunk.Background = beigeBrush;
-                    break;
+                Button chunk = new Button();
+                switch (a)
+                {
+                    case 0://Black
+                           //Should never get here.
+                        break;
+                    case 1://White
+                        chunk.Background = whiteBrush;
+                        break;
+                    case 2://Grey
+                        chunk.Background = grayBrush;
+                        break;
+                    case 3://white river
+                        chunk.Background = chartreuseBrush;
+                        break;
+                    case 4://Grey river
+                        chunk.Background = beigeBrush;
+                        break;
 
-                default://??
-                    break;
+                    default://??
+                        break;
+                }
+                chunk.BorderBrush = startBrush;
+                chunk.BorderThickness = new Thickness(1);
+                if (i == 0)
+                {
+                    chunk.Content = new int[] { starty, startx };
+                    Grid.SetColumn(chunk, starty);
+                    Grid.SetRow(chunk, startx);
+
+                }
+                else
+                {
+                    chunk.Content = new int[] { endy, endx};
+                    Grid.SetColumn(chunk, endy);
+                    Grid.SetRow(chunk, endx);
+
+                }
+                chunk.Click += chunkClick;
+                myGrid.Children.Add(chunk);
+                i++;
             }
-            chunk.BorderBrush = startBrush;
-            chunk.BorderThickness = new Thickness(1);
-            chunk.Content = new int[] { (int)a[0], (int)a[1] };
-            chunk.Click += chunkClick;
-            Grid.SetColumn(chunk, (int)a[0]);
-            Grid.SetRow(chunk, (int)a[1]);
-            myGrid.Children.Add(chunk);
-
         }
+            
     }
 }

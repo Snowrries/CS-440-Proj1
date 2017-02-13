@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Priority_Queue;
+using System.Diagnostics;
 
 namespace Gridworld_Heuristics
 {
@@ -14,6 +15,7 @@ namespace Gridworld_Heuristics
         int[,] closedList;
         public float[,] g;
         public List<float[]> parents;//[x,y,f,g,h]
+        public Stopwatch sw;
 
         public Naiive(int[,] world)
         {
@@ -26,6 +28,7 @@ namespace Gridworld_Heuristics
         public bool hSearch(int heuristic, int startx, int starty,
             int endx, int endy)
         {
+            sw = Stopwatch.StartNew();
             int cx = startx;
             int cy = starty;
             int nx, ny;
@@ -47,6 +50,7 @@ namespace Gridworld_Heuristics
                 cy = fordq[1];
                 if (cx == endx && cy == endy)
                 {
+                    sw.Stop();
                     return true;
                 }
                 closedList[cx, cy] = 1;
@@ -60,7 +64,7 @@ namespace Gridworld_Heuristics
                         //This is because the value in the closed list will be 1.
                         if (closedList[nx,ny] != 1)
                         {
-                            if (!fringe.Any(p => p[0] == nx || p[1] == ny))
+                            if (!fringe.Any(p => p[0] == nx && p[1] == ny))
                             {
                                 g[nx, ny] = 30000; // use 30,000 to refer to infinity
                                 //Parent of s' = NULL; everyone is default set to null
@@ -71,6 +75,7 @@ namespace Gridworld_Heuristics
                     }
                 }
             }
+            sw.Stop();
             return false;
         }
 
@@ -136,13 +141,19 @@ namespace Gridworld_Heuristics
 
         void UpdateVertex(int x, int y, int nx, int ny, int heuristic, int endx, int endy)
         {
+            int[] store;
             float css = cost(x, y, nx, ny);
-            float h = computeHeuristic(heuristic, x, y, endx, endy);
+            float h = computeHeuristic(heuristic, nx, ny, endx, endy);
             float cg = g[x, y];
             if (cg + css  < g[nx, ny])
             {
                 g[nx, ny] = cg + css;
                 parents.Add(new float[] { x, y, cg+h, cg, h });//x,y,f,g,h
+                store = fringe.First(p => p[0] == nx && p[1] == ny);
+                if (store != null)
+                    fringe.Remove(store);
+                fringe.Enqueue(new int[2] { nx, ny }, g[nx, ny] + h - 200*g[nx,ny]); // f- c*g where c = 200
+
             }
         }
         float cost(int x, int y, int nx, int ny)
