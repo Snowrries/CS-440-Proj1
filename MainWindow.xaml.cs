@@ -26,7 +26,6 @@ namespace Gridworld_Heuristics
         public MainWindow()
         {
             this.DataContext = mvm;
-            InitializeComponent();
             // Create the Grid
             myGrid = new Grid();
             myGrid.Width = 1280;
@@ -35,6 +34,7 @@ namespace Gridworld_Heuristics
             myGrid.VerticalAlignment = VerticalAlignment.Top;
             myGrid.ShowGridLines = false;
 
+            InitializeComponent();
 
             // Define the Columns
             for (int i = 0; i < 160; i++)
@@ -49,8 +49,6 @@ namespace Gridworld_Heuristics
                 RowDefinition row = new RowDefinition();
                 myGrid.RowDefinitions.Add(row);
             }
-            
-            //To Do: create a button to calculate the algorithm and check a dropdown box for what kind of algorithm to perform
             
             // Add the Grid as the Content of the Parent Window Object
             this.Map.Content= myGrid;
@@ -79,7 +77,7 @@ namespace Gridworld_Heuristics
                     switch (mvm.world[i, j])
                     {
                         case 0://Black
-                            chunk.Background= blackBrush;
+                            chunk.Background = blackBrush;
                             chunk.BorderThickness = noBorder;
                             break;
                         case 1://White
@@ -92,7 +90,7 @@ namespace Gridworld_Heuristics
                             break;
                         case 3://White with blue stripe
                             chunk.Background = whiteBrush;
-                            chunk.BorderBrush= blueBrush;
+                            chunk.BorderBrush = blueBrush;
                             chunk.BorderThickness = thinBorder;
                             break;
                         case 4://Grey with blue stripe
@@ -116,16 +114,16 @@ namespace Gridworld_Heuristics
         private void chunkClick(object sender, RoutedEventArgs e)
         {
             Button clicked = (Button)sender;
-            int[] coordinates = (int[]) clicked.Content;
+            int[] coordinates = (int[])clicked.Content;
 
             if (search != null)
             {
-                float[] result = search.parents.First(p => p[0] == coordinates[0] && p[1] == coordinates[1]);
-                if(result != null)
+                worldNode chunky = search.worldNodes[coordinates[0], coordinates[1]];
+                if (chunky != null)
                 {
-                    mvm.f = result[2];
-                    mvm.g = result[3];
-                    mvm.h = result[4];
+                    mvm.f = chunky.f;
+                    mvm.g = chunky.g;
+                    mvm.h = chunky.h;
                 }
             }
             
@@ -204,15 +202,17 @@ namespace Gridworld_Heuristics
 
             //Rerun the algorithm, update runtime
             int pairIdx = StartEndPairs.SelectedIndex;
+            if (pairIdx < 0) pairIdx = 0;
 
+            search = new Naiive(mvm.world);
             search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
                 mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
 
             //Interpret search data.
-            foreach (float[] a in search.parents)//[x,y,f,g,h]
+            foreach (worldNode a in search.parents)//[x,y,f,g,h]
             {
                 Button chunk = new Button();
-                switch (mvm.world[(int)a[0], (int)a[1]])
+                switch (mvm.world[a.x, a.y])
                 {
                     case 0://Black
                         //Should never get here.
@@ -235,14 +235,15 @@ namespace Gridworld_Heuristics
                 }
                 chunk.BorderBrush = pathBrush;
                 chunk.BorderThickness = new Thickness(1);
-                chunk.Content = new int[] { (int)a[0], (int)a[1] };
+                chunk.Content = a;
                 chunk.Click += chunkClick;
-                Grid.SetColumn(chunk, (int)a[0]);
-                Grid.SetRow(chunk, (int)a[1]);
+                Grid.SetColumn(chunk, a.x);
+                Grid.SetRow(chunk, a.y);
                 myGrid.Children.Add(chunk);
             }
             //Update Start/end pair appearance
             int spi = StartEndPairs.SelectedIndex;
+            if (spi < 0) spi = 0;
             int startx = mvm.startPairs[spi, 0];
             int starty = mvm.startPairs[spi, 1];
             int endx = mvm.endPairs[spi, 0];

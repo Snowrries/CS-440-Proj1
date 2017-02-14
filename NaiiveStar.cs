@@ -8,69 +8,109 @@ using System.Diagnostics;
 
 namespace Gridworld_Heuristics
 {
+    class worldNode
+    {
+        public worldNode parent;
+        public int x, y;
+        public float f, g, h;
+
+        public worldNode(int x_, int y_)
+        {
+            x = x_;
+            y = y_;
+            f = 0;
+            g = 30000;
+            h = 0;
+        }
+    }
+
+
     class Naiive
     {
+        
         int[,] world;
-        SimplePriorityQueue<int[], float> fringe;
-        int[,] closedList;
-        public float[,] g;
-        public List<float[]> parents;//[x,y,f,g,h]
+        public worldNode[,] worldNodes;
+        SimplePriorityQueue<worldNode, float> fringe;
+        List<worldNode> closedList;
+        public LinkedList<worldNode> parents;//[x,y,f,g,h]
         public Stopwatch sw;
 
         public Naiive(int[,] world)
         {
             this.world = world;
+            worldNodes = new worldNode[120,160];
         }
-
-
+        
         // Returns true if goal node is found. Returns false if no goal node is found.
         // To do: Add options to select algorithms. Track runtime.
         public bool hSearch(int heuristic, int startx, int starty,
             int endx, int endy)
         {
             sw = Stopwatch.StartNew();
+            /*for (int i = 0; i < 120; i++)
+            {
+                for (int j = 0; j < 160; j++)
+                {
+                    worldNodes[i, j] = new worldNode(i, j);
+                }
+            }*/
+            worldNode currentNode = new worldNode(startx,starty);
+            worldNodes[startx, starty] = currentNode;
+            worldNodes[endx, endy] = new worldNode(endx, endy);
+
+            worldNode nextNode;
+            currentNode.g = 0;
+
             int cx = startx;
             int cy = starty;
             int nx, ny;
-            g[startx, starty] = 0;
             float h = computeHeuristic(heuristic, cx, cy, endx, endy); //Place heuristic in here.
-            int[] fordq;
+            
+            fringe = new SimplePriorityQueue<worldNode, float>();
+            closedList = new List<worldNode>();
+            parents = new LinkedList<worldNode>();
 
-            fringe = new SimplePriorityQueue<int[], float>();
-            closedList = new int[120, 160];
-            parents = new List<float[]>();
-            g = new float[120, 160];
-
-            fringe.Enqueue(new int[2] { cx, cy }, g[startx,starty] + h);
+            fringe.Enqueue(currentNode, currentNode.g + h - 200*currentNode.g);
 
             while (fringe.Any())
             {
-                fordq = fringe.Dequeue();
-                cx = fordq[0];
-                cy = fordq[1];
-                if (cx == endx && cy == endy)
+                currentNode = fringe.Dequeue();
+                if (currentNode == worldNodes[endx, endy])
                 {
                     sw.Stop();
                     return true;
                 }
-                closedList[cx, cy] = 1;
+                closedList.Add(currentNode);
                 for (int i = -1; i < 1; i++)
                 {
                     for (int j = -1; j < 1; j++)
                     {
                         nx = cx + i;
                         ny = cy + j;
-                        //We don't necessarily want to check when i=0 and j=0, but it won't affect anything.
-                        //This is because the value in the closed list will be 1.
-                        if (closedList[nx,ny] != 1)
+                        if(nx < 0 || nx > 119 || ny < 0 || ny > 159)
                         {
-                            if (!fringe.Any(p => p[0] == nx && p[1] == ny))
+                            continue;
+                        }
+                        if (worldNodes[nx, ny] == null)
+                        {
+                            //Was never expanded.
+                            nextNode = new worldNode(nx, ny);
+                            worldNodes[nx, ny] = nextNode;
+                            UpdateVertex(cx, cy, nx, ny, heuristic, endx, endy);
+                        }
+                        else
+                        {
+                            nextNode = worldNodes[nx, ny];
+                            if (!closedList.Contains(worldNodes[nx, ny]))
                             {
-                                g[nx, ny] = 30000; // use 30,000 to refer to infinity
-                                //Parent of s' = NULL; everyone is default set to null
-                                //s' never has a parent set, so it's implicitly null
+                                if (!fringe.Contains(worldNodes[nx, ny]))
+                                {//It exists, but was not generated, and is not in the fringe?
+                                    //Strange... Very strange... reset it.
+                                    nextNode.g = 30000; // use 30,000 to refer to infinity
+                                    nextNode.parent = null;//Parent of s' = NULL
+                                }
+                                UpdateVertex(cx, cy, nx, ny, heuristic, endx, endy);
                             }
-                            UpdateVertex(cx, cy, nx, ny,heuristic,endx,endy);
                         }
                     }
                 }
@@ -82,12 +122,7 @@ namespace Gridworld_Heuristics
         public float computeHeuristic(int heuristic, int cx, int cy, int endx, int endy)
         {
             //Can be slightly optimized with a switch statement
-            if(heuristic == 0)
-            {
-                //Euclidian
-                return (float) Math.Sqrt(Math.Pow(cx - endx, 2) + Math.Pow(cy - endy, 2));
-            }
-            else if (heuristic == 1)
+            if (heuristic == 1)
             {
                 //Manhattan (all 1)
                 return (float)(Math.Abs(cx - endx) + Math.Abs(cy - endy));
@@ -135,24 +170,30 @@ namespace Gridworld_Heuristics
                 return cost;
 
             }
-
-            return 0;
+            else// (heuristic == 0)
+            {
+                //Euclidian
+                return (float)Math.Sqrt(Math.Pow(cx - endx, 2) + Math.Pow(cy - endy, 2));
+            }
         }
 
         void UpdateVertex(int x, int y, int nx, int ny, int heuristic, int endx, int endy)
         {
-            int[] store;
+            worldNode current = worldNodes[x, y];
+            worldNode next = worldNodes[nx, ny];
+            
             float css = cost(x, y, nx, ny);
             float h = computeHeuristic(heuristic, nx, ny, endx, endy);
-            float cg = g[x, y];
-            if (cg + css  < g[nx, ny])
+            
+            if (current.g + css  < next.g)
             {
-                g[nx, ny] = cg + css;
-                parents.Add(new float[] { x, y, cg+h, cg, h });//x,y,f,g,h
-                store = fringe.First(p => p[0] == nx && p[1] == ny);
-                if (store != null)
-                    fringe.Remove(store);
-                fringe.Enqueue(new int[2] { nx, ny }, g[nx, ny] + h - 200*g[nx,ny]); // f- c*g where c = 200
+                next.g = current.g + css;
+                next.parent = current;
+                if (fringe.Contains(next))
+                {
+                    fringe.Remove(next);
+                }
+                fringe.Enqueue(next, next.g + h - 200*next.g); // f- c*g where c = 200
 
             }
         }
