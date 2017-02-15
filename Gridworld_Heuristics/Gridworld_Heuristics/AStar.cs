@@ -46,16 +46,16 @@ public struct GridPOS
 
 public class TwoDGrid : WeightedGraph<GridPOS>
 {
-    //following the provided img(1) on resoreces, where p1=p0 in this case and that its a y,x system
+    //following the provided img(1) on resoreces, where p1=p0 in this case and that its a row major system.
     private static readonly GridPOS[] P = new[]
        {
-            new GridPOS( -1, 1),
-            new GridPOS( 1, 0),
-            new GridPOS(1, 1),
-            new GridPOS(0, 1),
-            new GridPOS( -1, 1),
+            new GridPOS( -1, -1),
             new GridPOS( -1, 0),
-            new GridPOS(-1, -1),
+            new GridPOS(-1, 1),
+            new GridPOS(0, 1),
+            new GridPOS( 1, 1),
+            new GridPOS( 1, 0),
+            new GridPOS(1, -1),
             new GridPOS(0, -1)
         };
     private int numCol; //only currently the grid is set like this.
@@ -64,8 +64,8 @@ public class TwoDGrid : WeightedGraph<GridPOS>
     public TwoDGrid(int[,] grid, int rows, int cols)
     {
         this.grid = grid;
-        this.numCol=cols;
-        this.numRow=rows;
+        this.numCol = cols;
+        this.numRow = rows;
     }
     public bool InBounds(GridPOS id)
     {
@@ -74,18 +74,20 @@ public class TwoDGrid : WeightedGraph<GridPOS>
     }
     public bool Passable(GridPOS id, GridPOS next)
     {
-        //assumes that you can't travel diagonally on another highway from a highway
+
+ 
 
         int idGridType = grid[id.row, id.col];
         int nextGridType = grid[next.row, next.col];
+        Debug.WriteLine("-------");
+        Debug.WriteLine(next.ToString() + " has grid type " + nextGridType);
         if (nextGridType == 0)
         {
             return false;
         }
-        if (isDiag(id, next) && (idGridType == 3 || idGridType == 4) && (nextGridType == 3 || nextGridType == 4))
-        {
-            return false;
-        }
+        
+        Debug.WriteLine(id.ToString() + " and " + next.ToString() + " is passable \n ----");
+
         return true;
     }
     private bool isDiag(GridPOS a, GridPOS b)
@@ -102,8 +104,8 @@ public class TwoDGrid : WeightedGraph<GridPOS>
         int aGridType = grid[a.row, a.col];
         int bGridType = grid[b.row, b.col];
         bool diag = isDiag(a, b);
-        //assumes that getting on the highway have no modifiers and while on a highway, you can't travel diagonally on another highway from a highway
-        //nomral cells
+      
+        //both normal
         if (aGridType == 1 && (bGridType == 1 || bGridType == 3))
         {
             if (diag)
@@ -126,7 +128,7 @@ public class TwoDGrid : WeightedGraph<GridPOS>
         {
             if (diag)
             {
-                return (float)(Math.Sqrt((double)2) + Math.Sqrt((double)8)) / 2;
+                return (float)(Math.Sqrt((double)2) + Math.Sqrt((double)8)) / (float) 2;
             }
             return (float)1.5;
         }
@@ -134,14 +136,26 @@ public class TwoDGrid : WeightedGraph<GridPOS>
         //highway
         if (aGridType == 3 && bGridType == 3)
         {
+            if (diag)
+            {
+                return (float)Math.Sqrt((double)2)/ (float)4;
+            }
             return (float)0.25;
         }
         if (aGridType == 4 && bGridType == 4)
         {
+            if (diag)
+            {
+                return (float)Math.Sqrt((double)8)/ (float) 4;
+            }
             return (float)0.5;
         }
         if ((aGridType == 3 && bGridType == 4) || (aGridType == 4 && bGridType == 3))
         {
+            if (diag)
+            {
+                return(float)((Math.Sqrt((double)2) + Math.Sqrt((double)8)) / (float)2)/(float)4;
+            }
             return (float)0.375;
         }
         return float.PositiveInfinity; //some error, just ignore
@@ -151,6 +165,9 @@ public class TwoDGrid : WeightedGraph<GridPOS>
         foreach (var dir in P)
         {
             GridPOS next = id + dir;
+
+
+
             if (InBounds(next) && Passable(id, next))
             {
                 yield return next;
@@ -160,12 +177,13 @@ public class TwoDGrid : WeightedGraph<GridPOS>
 }
 public class AStarSearch
 {
-    public Dictionary<GridPOS, GridPOS> cameFrom
+    public Dictionary<GridPOS, GridPOS> closedSet = new Dictionary<GridPOS, GridPOS>();
+    public Dictionary<GridPOS, GridPOS> cameFrom //path
        = new Dictionary<GridPOS, GridPOS>();
     public Dictionary<GridPOS, float> g
-        = new Dictionary<GridPOS, float>(); //also works as the closed set.
-    public Dictionary<GridPOS, float[]> gh
-        = new Dictionary<GridPOS, float[]>(); //I would like to store h as well. 
+        = new Dictionary<GridPOS, float>();
+    public Dictionary<GridPOS, float> h
+        = new Dictionary<GridPOS, float>(); //I would like to store h as well. 
     public Stopwatch sw;
     WeightedGraph<GridPOS> graph;
     GridPOS start, goal;
@@ -175,19 +193,19 @@ public class AStarSearch
 
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase)
     {
-        graph = new TwoDGrid(grid, grid.Rank, grid.GetLength(0));
+        graph = new TwoDGrid(grid, grid.GetLength(0), grid.GetLength(1));
         start = new GridPOS(startPOS[0], startPOS[1]);
         goal = new GridPOS(GoalPOS[0], GoalPOS[1]);
         openSet = new SimplePriorityQueue<GridPOS>();
         openSet.Enqueue(start, 0);
         hCase = heruisticCase;
         g[start] = 0;
-        gh[start] = new float[] { 0, 0 };
-        cameFrom[start] = start;
+        h[start] = 0;
+        //cameFrom[start] = start;
     }
     public AStarSearch(int[,] grid, int[] startPOS, int[] GoalPOS, int heruisticCase, int Weight)
     {
-        graph = new TwoDGrid(grid, grid.Rank, grid.GetLength(0));
+        graph = new TwoDGrid(grid, grid.GetLength(0), grid.GetLength(1));
         start = new GridPOS(startPOS[0], startPOS[1]);
         goal = new GridPOS(GoalPOS[0], GoalPOS[1]);
         openSet = new SimplePriorityQueue<GridPOS>();
@@ -195,8 +213,8 @@ public class AStarSearch
         hCase = heruisticCase;
         wValue = Weight;
         g[start] = 0;
-        gh[start] = new float[] { 0, 0 };
-        cameFrom[start] = start;
+        h[start] = 0;
+        //cameFrom[start] = start;
     }
     public float Heuristic(GridPOS next, GridPOS goal)
     {
@@ -207,6 +225,7 @@ public class AStarSearch
         }
         return 0;
     }
+
     public bool AStarSearchEx()
     {
 
@@ -214,33 +233,55 @@ public class AStarSearch
         while (openSet.Count > 0)
         {
             var current = openSet.Dequeue();
-            Debug.WriteLine("dequeu" + current.ToString());
+            Debug.WriteLine("_____________________________");
+            Debug.WriteLine("Dequeueing " + current.ToString());
+
             if (current.Equals(goal))
             {
                 sw.Stop();
                 return true;
             }
+            closedSet[current] = current;
             foreach (var next in graph.Neighbors(current))
             {
+                Debug.WriteLine("neighbor of current " + current.ToString() + " being considered is  " + next.ToString());
+
+                if (closedSet.ContainsKey(next))
+                {
+                    Debug.WriteLine(next.ToString() + "was already in closed set so skipping");
+                    continue;
+                }
+                if (!g.ContainsKey(next))
+                {
+                    g[next] = float.PositiveInfinity;
+                    h[next] = -1; //value not intilized soo.
+                }
                 float newG = g[current]
                     + graph.Cost(current, next);
-                if (!g.ContainsKey(next)
-                    || newG < g[next])
+                if (newG < g[next])
                 {
                     g[next] = newG;
-                    float h = Heuristic(next, goal);
-                    gh[next] = new float[] { newG, h }; //I want to store g and h.
-                    float f = newG + h;
+                    float newH = Heuristic(next, goal);
+                    h[next] = newH; //I want to store g and h.
+                    float f = newG + (newH * wValue);
+                    if (openSet.Contains(next)) //can we optimise it with a hastable? 
+                    {
+                        Debug.WriteLine(next.ToString() + " was already in the tree, removing");
+                        openSet.Remove(next);
+                    }
+                    Debug.WriteLine(next.ToString() + " added to tree with value " + f);
                     openSet.Enqueue(next, f);
                     cameFrom[next] = current;
                 }
+
             }
         }
         sw.Stop();
         return false;
     }
-}/*
-public class test
+
+}
+/*public class test
 {
     static void Main()
     {
@@ -250,17 +291,25 @@ public class test
                                     { 1,1,0,1,1},
                                     { 1,1,0,1,1},
                                     {1,1,1,1,1 }};
-        int[] start = new int[] { 2, 0 };
-        int[] end = new int[] { 2, 4 };
+       
+        int[] start = new int[] { 0, 0 };
+        int[] end = new int[] { 4, 4 };
+        GridPOS endPOS = new GridPOS(end[0], end[1]);
+       
+       
         AStarSearch aSearch = new AStarSearch(grid, start, end, 0);
         bool result = aSearch.AStarSearchEx();
         Debug.WriteLine(result);
         
-        foreach (var entry in aSearch.cameFrom)
+        String output = endPOS.ToString();
+        this prints out the path.
+        while (aSearch.cameFrom.ContainsKey(endPOS))
         {
+            endPOS = aSearch.cameFrom[endPOS];
+            output += endPOS.ToString();
             
-            Debug.WriteLine(entry.Value.ToString());
         }
+        Debug.WriteLine(output);
     }
 
 }*/
