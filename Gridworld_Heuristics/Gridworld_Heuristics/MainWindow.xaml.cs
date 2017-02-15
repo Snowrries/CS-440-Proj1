@@ -131,12 +131,13 @@ namespace Gridworld_Heuristics
             Button clicked = (Button)sender;
             int[] coordinates = (int[]) clicked.Content;
             GridPOS clicked2 = new global::GridPOS(coordinates[0], coordinates[1]);
-            if (aSearch != null && aSearch.gh.ContainsKey(clicked2))
+            if (aSearch != null && aSearch.g.ContainsKey(clicked2))
             {
-                float[] gh = aSearch.gh[clicked2];
-                mvm.f = gh[0] + gh[1];
-                mvm.g = gh[0];
-                mvm.h = gh[1];
+               
+                
+                mvm.g = aSearch.g[clicked2];
+                mvm.h = aSearch.h[clicked2];
+                mvm.f = mvm.g + mvm.h;
             }
             
             //Grab button coordinates
@@ -212,10 +213,12 @@ namespace Gridworld_Heuristics
                 new int[] { mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1] }, Algo.SelectedIndex);
             bool result = aSearch.AStarSearchEx();
             //Interpret aSearch data.
-            foreach (GridPOS a in aSearch.gh.Keys)
+            GridPOS pathPTR = aSearch.goal;
+            while (aSearch.cameFrom.ContainsKey(pathPTR))
             {
+                
                 Button chunk = new Button();
-                switch (mvm.world[a.row, a.col])
+                switch (mvm.world[pathPTR.row, pathPTR.col])
                 {
                     case 0://Black
                         //Should never get here.
@@ -244,11 +247,12 @@ namespace Gridworld_Heuristics
                 }
                 chunk.BorderBrush = pathBrush;
                 chunk.BorderThickness = new Thickness(1);
-                chunk.Content = new int[] { a.row, a.col };
+                chunk.Content = new int[] { mvm.world[pathPTR.row, pathPTR.col] };
                 chunk.Click += chunkClick;
-                Grid.SetColumn(chunk, a.col);
-                Grid.SetRow(chunk, a.row);
+                Grid.SetColumn(chunk, pathPTR.col);
+                Grid.SetRow(chunk, pathPTR.row);
                 myGrid.Children.Add(chunk);
+                pathPTR = aSearch.cameFrom[pathPTR];
             }
             return aSearch;
         }

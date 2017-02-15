@@ -186,7 +186,7 @@ public class AStarSearch
         = new Dictionary<GridPOS, float>(); //I would like to store h as well. 
     public Stopwatch sw;
     WeightedGraph<GridPOS> graph;
-    GridPOS start, goal;
+    public GridPOS start, goal;
     int hCase;
     int wValue = 1;
     private SimplePriorityQueue<GridPOS> openSet;
