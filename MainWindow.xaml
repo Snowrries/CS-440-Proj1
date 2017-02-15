@@ -19,7 +19,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Heuristic:</TextBlock>
-                <ComboBox Name="Heuristic" SelectedIndex="0" ItemsSource ="{Binding Path=Heuristic}" Padding="10" FontSize ="14" Width="130"></ComboBox>
+                <ComboBox Name="Heuristic" SelectedIndex="0" ItemsSource ="{Binding Path=heuristic}" Padding="10" FontSize ="14" Width="130"></ComboBox>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Padding="10" FontSize="14">Weight:</TextBlock>

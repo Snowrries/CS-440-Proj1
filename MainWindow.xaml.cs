@@ -21,6 +21,7 @@ namespace Gridworld_Heuristics
         
         MainViewModel mvm = new MainViewModel();
         Grid myGrid;
+        Button[,] buttonlist;
         //AStarSearch aSearch;
         Naiive search;
         public MainWindow()
@@ -40,6 +41,7 @@ namespace Gridworld_Heuristics
             for (int i = 0; i < 160; i++)
             {
                 ColumnDefinition col = new ColumnDefinition();
+                col.Width = new GridLength((int)1280 / 160);
                 myGrid.ColumnDefinitions.Add(col);
             }
 
@@ -47,17 +49,18 @@ namespace Gridworld_Heuristics
             for (int i = 0; i < 120; i++)
             {
                 RowDefinition row = new RowDefinition();
+                row.Height = new GridLength((int)1280 / 160);
                 myGrid.RowDefinitions.Add(row);
             }
             
             // Add the Grid as the Content of the Parent Window Object
             this.Map.Content= myGrid;
-            GridHelper.initData(mvm);
 
         }
 
         private void Visualize()
         {
+            buttonlist = new Button[120, 160];
             SolidColorBrush whiteBrush = new SolidColorBrush();
             whiteBrush.Color = Colors.White;
             SolidColorBrush blackBrush = new SolidColorBrush();
@@ -74,6 +77,7 @@ namespace Gridworld_Heuristics
                 for(int j = 0; j < 160; j++)
                 {
                     Button chunk = new Button();
+                    buttonlist[i, j] = chunk;
                     switch (mvm.world[i, j])
                     {
                         case 0://Black
@@ -116,7 +120,7 @@ namespace Gridworld_Heuristics
             Button clicked = (Button)sender;
             int[] coordinates = (int[])clicked.Content;
 
-            if (search != null)
+            if (search.worldNodes[coordinates[0], coordinates[1]] != null)
             {
                 worldNode chunky = search.worldNodes[coordinates[0], coordinates[1]];
                 if (chunky != null)
@@ -139,7 +143,6 @@ namespace Gridworld_Heuristics
             GridHelper.readInputs(0, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
             //Visualize the world.
             Visualize();
-
             mvm.RefreshPairs();
         }
 
@@ -172,8 +175,9 @@ namespace Gridworld_Heuristics
         {
             //Update Map display path highlights
             //Update Map displayed Start/goal pair
+            if (search == null) return;
             recalculateAlgorithm();
-            
+            mvm.Runtime = search.sw.ElapsedTicks;
         }
 
         //May not need this function.
@@ -204,14 +208,17 @@ namespace Gridworld_Heuristics
             int pairIdx = StartEndPairs.SelectedIndex;
             if (pairIdx < 0) pairIdx = 0;
 
-            search = new Naiive(mvm.world);
             search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
                 mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
 
             //Interpret search data.
-            foreach (worldNode a in search.parents)//[x,y,f,g,h]
+            worldNode a = search.end;
+            while (a.parent != null)
             {
+                a = a.parent;
                 Button chunk = new Button();
+                myGrid.Children.Remove(buttonlist[a.x, a.y]);
+                buttonlist[a.x, a.y] = chunk;
                 switch (mvm.world[a.x, a.y])
                 {
                     case 0://Black
@@ -235,10 +242,11 @@ namespace Gridworld_Heuristics
                 }
                 chunk.BorderBrush = pathBrush;
                 chunk.BorderThickness = new Thickness(1);
-                chunk.Content = a;
+                chunk.Content = new int[] { a.x, a.y } ;
                 chunk.Click += chunkClick;
                 Grid.SetColumn(chunk, a.x);
                 Grid.SetRow(chunk, a.y);
+
                 myGrid.Children.Add(chunk);
             }
             //Update Start/end pair appearance
@@ -250,11 +258,13 @@ namespace Gridworld_Heuristics
             int endy = mvm.endPairs[spi, 1];
 
             List<int> sep = new List<int> { mvm.world[startx, starty], mvm.world[endx, endy] };
+            myGrid.Children.Remove(buttonlist[startx, starty]);
+            myGrid.Children.Remove(buttonlist[endx, endy]);
             int i = 0;
-            foreach (int a in sep)
+            foreach (int ba in sep)
             {
                 Button chunk = new Button();
-                switch (a)
+                switch (ba)
                 {
                     case 0://Black
                            //Should never get here.
@@ -275,25 +285,30 @@ namespace Gridworld_Heuristics
                     default://??
                         break;
                 }
-                chunk.BorderBrush = startBrush;
-                chunk.BorderThickness = new Thickness(1);
                 if (i == 0)
                 {
-                    chunk.Content = new int[] { starty, startx };
-                    Grid.SetColumn(chunk, starty);
-                    Grid.SetRow(chunk, startx);
+                    chunk.BorderBrush = startBrush;
+                    chunk.BorderThickness = new Thickness(1);
+                    chunk.Content = new int[] { startx, starty };
+                    buttonlist[startx, starty] = chunk;
+                    Grid.SetColumn(chunk, startx);
+                    Grid.SetRow(chunk, starty);
 
                 }
                 else
                 {
-                    chunk.Content = new int[] { endy, endx};
-                    Grid.SetColumn(chunk, endy);
-                    Grid.SetRow(chunk, endx);
+                    chunk.BorderBrush = endBrush;
+                    chunk.BorderThickness = new Thickness(1);
+                    chunk.Content = new int[] { endx, endy};
+                    buttonlist[endx, endy] = chunk;
+                    Grid.SetColumn(chunk, endx);
+                    Grid.SetRow(chunk, endy);
 
                 }
                 chunk.Click += chunkClick;
                 myGrid.Children.Add(chunk);
                 i++;
+                this.Map.Content = myGrid;
             }
         }
             

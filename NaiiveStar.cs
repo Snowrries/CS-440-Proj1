@@ -32,7 +32,8 @@ namespace Gridworld_Heuristics
         public worldNode[,] worldNodes;
         SimplePriorityQueue<worldNode, float> fringe;
         List<worldNode> closedList;
-        public LinkedList<worldNode> parents;//[x,y,f,g,h]
+        public worldNode end;
+//        public LinkedList<worldNode> parents;//[x,y,f,g,h]
         public Stopwatch sw;
 
         public Naiive(int[,] world)
@@ -57,6 +58,7 @@ namespace Gridworld_Heuristics
             worldNode currentNode = new worldNode(startx,starty);
             worldNodes[startx, starty] = currentNode;
             worldNodes[endx, endy] = new worldNode(endx, endy);
+            end = worldNodes[endx, endy];
 
             worldNode nextNode;
             currentNode.g = 0;
@@ -68,7 +70,6 @@ namespace Gridworld_Heuristics
             
             fringe = new SimplePriorityQueue<worldNode, float>();
             closedList = new List<worldNode>();
-            parents = new LinkedList<worldNode>();
 
             fringe.Enqueue(currentNode, currentNode.g + h - 200*currentNode.g);
 

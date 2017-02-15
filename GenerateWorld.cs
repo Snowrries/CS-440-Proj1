@@ -10,10 +10,10 @@ namespace Gridworld_Heuristics
     class createWorld
     {
 
-        static int[,] world = new int[120, 160];
-        static int[,] startPairs = new int[10, 2];
-        static int[,] endPairs = new int[10, 2];
-        static int[,] hardPairs = new int[8, 2];
+        static int[,] world;
+        static int[,] startPairs;
+        static int[,] endPairs;
+        static int[,] hardPairs;
 
 
         static int randomBorder(int[] points)
@@ -85,7 +85,10 @@ namespace Gridworld_Heuristics
 
         static void create()
         {
-
+            world = new int[120, 160];
+            startPairs = new int[10, 2];
+            endPairs = new int[10, 2];
+            hardPairs = new int[8, 2];
             int xpair, ypair;
             //Obstacle cost = 0
             //white cost = 1
@@ -193,9 +196,9 @@ namespace Gridworld_Heuristics
                         //Also, save progress.
                         tempworld = (int[,])tempworld2.Clone();
                     }
-                    if(failsafe > 50)
+                    if(failsafe > 500)
                     {
-                        //If we fail more than 50 times, then just reset.
+                        //If we fail more than 500 times, then just reset.
                         failsafe = 0;
                         tempworld = (int[,])world.Clone();
                         i = 0;
@@ -240,14 +243,21 @@ namespace Gridworld_Heuristics
                 while (incomplete)
                 {
                     createPair(sp);
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (startPairs[j, 0] == sp[0] && startPairs[j, 1] == sp[1])
+                        {
+                            j = 0; createPair(sp);
+                        }
+                    }
                     createPair(gp);
-                    //ToDo: Determine if there is a valid path from sp to gp
-                    //If valid, set incomplete to false.
-                    //AStarSearch aSearch = new AStarSearch(world, sp, gp, 0);
-                    //bool result = aSearch.AStarSearchEx();
-                    //incomplete = result; // For now, just assume it works, so that we can test output.
-                    Naiive search = new Naiive(world);
-                    incomplete = search.hSearch(0, sp[0], sp[1], gp[0], gp[1]);
+                    if ((Math.Abs(sp[0] - gp[0]) + Math.Abs(sp[1] - gp[1])) < 100)
+                        incomplete = true;
+                    else
+                    {
+                        Naiive search = new Naiive(world);
+                        incomplete = search.hSearch(0, sp[0], sp[1], gp[0], gp[1]);
+                    }
                 }
                 startPairs[i, 0] = sp[0];
                 startPairs[i, 1] = sp[1];
