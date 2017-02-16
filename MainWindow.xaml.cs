@@ -165,9 +165,13 @@ namespace Gridworld_Heuristics
             Visualize();
             mvm.RefreshPairs();
             //Recalculate Algorithm
-            
+            float wght;
+            if (!float.TryParse(Weight.Text, out wght))
+            {
+                wght = 1;
+            }
             search = new Naiive(mvm.world);
-            bool result = search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
+            bool result = search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
 
         }
 
@@ -198,17 +202,20 @@ namespace Gridworld_Heuristics
             SolidColorBrush grayBrush = new SolidColorBrush();
             grayBrush.Color = Colors.Gray;
             SolidColorBrush pathBrush = new SolidColorBrush();
-            grayBrush.Color = Colors.BlueViolet;
+            pathBrush.Color = Colors.BlueViolet;
             SolidColorBrush startBrush = new SolidColorBrush();
             startBrush.Color = Colors.Green;
             SolidColorBrush endBrush = new SolidColorBrush();
             endBrush.Color = Colors.Red;
-
+            Visualize();
             //Rerun the algorithm, update runtime
             int pairIdx = StartEndPairs.SelectedIndex;
             if (pairIdx < 0) pairIdx = 0;
-
-            search.hSearch(Heuristic.SelectedIndex, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+            float wght;
+            if (!float.TryParse(Weight.Text, out wght)) {
+                wght = 1;
+            }
+            search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
                 mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
 
             //Interpret search data.
@@ -244,8 +251,8 @@ namespace Gridworld_Heuristics
                 chunk.BorderThickness = new Thickness(1);
                 chunk.Content = new int[] { a.x, a.y } ;
                 chunk.Click += chunkClick;
-                Grid.SetColumn(chunk, a.x);
-                Grid.SetRow(chunk, a.y);
+                Grid.SetColumn(chunk, a.y);
+                Grid.SetRow(chunk, a.x);
 
                 myGrid.Children.Add(chunk);
             }
@@ -291,8 +298,8 @@ namespace Gridworld_Heuristics
                     chunk.BorderThickness = new Thickness(1);
                     chunk.Content = new int[] { startx, starty };
                     buttonlist[startx, starty] = chunk;
-                    Grid.SetColumn(chunk, startx);
-                    Grid.SetRow(chunk, starty);
+                    Grid.SetColumn(chunk, starty);
+                    Grid.SetRow(chunk, startx);
 
                 }
                 else
@@ -301,14 +308,13 @@ namespace Gridworld_Heuristics
                     chunk.BorderThickness = new Thickness(1);
                     chunk.Content = new int[] { endx, endy};
                     buttonlist[endx, endy] = chunk;
-                    Grid.SetColumn(chunk, endx);
-                    Grid.SetRow(chunk, endy);
+                    Grid.SetColumn(chunk, endy );
+                    Grid.SetRow(chunk, endx);
 
                 }
                 chunk.Click += chunkClick;
                 myGrid.Children.Add(chunk);
                 i++;
-                this.Map.Content = myGrid;
             }
         }
             
