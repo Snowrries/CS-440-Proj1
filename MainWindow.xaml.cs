@@ -22,6 +22,7 @@ namespace Gridworld_Heuristics
         MainViewModel mvm = new MainViewModel();
         Grid myGrid;
         Button[,] buttonlist;
+        Rectangle[,] backgroundList;
         //AStarSearch aSearch;
         Naiive search;
         public MainWindow()
@@ -60,7 +61,8 @@ namespace Gridworld_Heuristics
 
         private void Visualize()
         {
-            buttonlist = new Button[120, 160];
+            //buttonlist = new Button[120, 160];
+            backgroundList = new Rectangle[120, 160];
             SolidColorBrush whiteBrush = new SolidColorBrush();
             whiteBrush.Color = Colors.White;
             SolidColorBrush blackBrush = new SolidColorBrush();
@@ -69,45 +71,41 @@ namespace Gridworld_Heuristics
             blueBrush.Color = Colors.Aqua;
             SolidColorBrush grayBrush = new SolidColorBrush();
             grayBrush.Color = Colors.Gray;
-            Thickness noBorder = new Thickness(0);
-            Thickness thinBorder = new Thickness(1);
             
             for ( int i = 0; i < 120; i++)
             {
                 for(int j = 0; j < 160; j++)
                 {
-                    Button chunk = new Button();
-                    buttonlist[i, j] = chunk;
+                    Rectangle chunk = new Rectangle();
+                    backgroundList[i, j] = chunk;
                     switch (mvm.world[i, j])
                     {
                         case 0://Black
-                            chunk.Background = blackBrush;
-                            chunk.BorderThickness = noBorder;
+                            chunk.Fill = blackBrush;
+                            chunk.StrokeThickness = 0;
                             break;
                         case 1://White
-                            chunk.Background = whiteBrush;
-                            chunk.BorderThickness = noBorder;
+                            chunk.Fill = whiteBrush;
+                            chunk.StrokeThickness = 0;
                             break;
                         case 2://Grey
-                            chunk.Background = grayBrush;
-                            chunk.BorderThickness = noBorder;
+                            chunk.Fill = grayBrush;
+                            chunk.StrokeThickness = 0;
                             break;
                         case 3://White with blue stripe
-                            chunk.Background = whiteBrush;
-                            chunk.BorderBrush = blueBrush;
-                            chunk.BorderThickness = thinBorder;
+                            chunk.Fill = whiteBrush;
+                            chunk.Stroke = blueBrush;
+                            chunk.StrokeThickness = 1;
                             break;
                         case 4://Grey with blue stripe
-                            chunk.Background = grayBrush;
-                            chunk.BorderBrush = blueBrush;
-                            chunk.BorderThickness = thinBorder;
+                            chunk.Fill = grayBrush;
+                            chunk.Stroke = blueBrush;
+                            chunk.StrokeThickness = 1;
                             break;
 
                         default://??
                             break;
                     }
-                    chunk.Content = new int[] { i, j };
-                    chunk.Click += chunkClick;
                     Grid.SetColumn(chunk, j);
                     Grid.SetRow(chunk, i);
                     myGrid.Children.Add(chunk);
@@ -208,6 +206,7 @@ namespace Gridworld_Heuristics
             SolidColorBrush endBrush = new SolidColorBrush();
             endBrush.Color = Colors.Red;
             Visualize();
+            buttonlist = new Button[120, 160];
             //Rerun the algorithm, update runtime
             int pairIdx = StartEndPairs.SelectedIndex;
             if (pairIdx < 0) pairIdx = 0;
@@ -224,7 +223,7 @@ namespace Gridworld_Heuristics
             {
                 a = a.parent;
                 Button chunk = new Button();
-                myGrid.Children.Remove(buttonlist[a.x, a.y]);
+                myGrid.Children.Remove(backgroundList[a.x, a.y]);
                 buttonlist[a.x, a.y] = chunk;
                 switch (mvm.world[a.x, a.y])
                 {

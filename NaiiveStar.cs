@@ -23,17 +23,13 @@ namespace Gridworld_Heuristics
             h = 0;
         }
     }
-
-
     class Naiive
     {
-        
         int[,] world;
         public worldNode[,] worldNodes;
         SimplePriorityQueue<worldNode, float> fringe;
         List<worldNode> closedList;
         public worldNode end;
-//        public LinkedList<worldNode> parents;//[x,y,f,g,h]
         public Stopwatch sw;
 
         public Naiive(int[,] world)
@@ -48,17 +44,10 @@ namespace Gridworld_Heuristics
         {
             worldNodes = new worldNode[120,160];
             sw = Stopwatch.StartNew();
-            /*for (int i = 0; i < 120; i++)
-            {
-                for (int j = 0; j < 160; j++)
-                {
-                    worldNodes[i, j] = new worldNode(i, j);
-                }
-            }*/
             worldNode currentNode = new worldNode(startx,starty);
             worldNodes[startx, starty] = currentNode;
-            worldNodes[endx, endy] = new worldNode(endx, endy);
-            end = worldNodes[endx, endy];
+            end = new worldNode(endx, endy);
+            worldNodes[endx, endy] = end;
 
             worldNode nextNode;
             currentNode.g = 0;
@@ -107,10 +96,8 @@ namespace Gridworld_Heuristics
                             if (!closedList.Contains(worldNodes[nx, ny]))
                             {
                                 /*if (!fringe.Contains(worldNodes[nx, ny]))
-                                {//It exists, but was not generated, and is not in the fringe?
-                                    //Strange... Very strange... reset it.
-                                    nextNode.g = 30000; // use 30,000 to refer to infinity
-                                    nextNode.parent = null;//Parent of s' = NULL
+                                {
+                                    UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
                                 }*/
                                 UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
                             }
@@ -134,6 +121,7 @@ namespace Gridworld_Heuristics
                 weight = 1;
             }
             float ret;
+            w = .25f;
             //Can be slightly optimized with a switch statement
             if (heuristic == 1)
             {
@@ -197,20 +185,22 @@ namespace Gridworld_Heuristics
             worldNode next = worldNodes[nx, ny];
             
             float css = cost(x, y, nx, ny);
-            if (css == 0) return;
-            float h = computeHeuristic(heuristic, algo, weight, nx, ny, endx, endy);
+            if(css == 0)
+            {
+                closedList.Add(next);
+                return;
+            }
             
             if (current.g + css  < next.g)
             {
                 next.g = current.g + css;
-                next.h = h;
+                next.h = computeHeuristic(heuristic, algo, weight, nx, ny, endx, endy);
                 next.f = next.g + next.h;
                 next.parent = current;
                 if (fringe.Contains(next))
-                {
-                    fringe.Remove(next);
-                }
-                fringe.Enqueue(next, next.f); // f- c*g where c = 200
+                    fringe.UpdatePriority(next, next.f);
+                else
+                    fringe.Enqueue(next, next.f); // f- c*g where c = 200
                 //next.g + h - 200*next.g
             }
         }
@@ -226,18 +216,13 @@ namespace Gridworld_Heuristics
                 return 0;
             }
             //Check if both are highways
-            if (start == 3 || start == 4)
-                if (next == 3 || next == 4)
-                    multiplier = .25f;
-            //Normalize start and next;
-            if (start == 3)
-                start = 1;
-            else if (start == 4)
-                start = 2;
-            if (next == 3)
-                next = 1;
-            else if (next == 4)
-                next = 2;
+            if ((start == 3 || start == 4) && (next == 3 || next == 4))
+            {
+                //Normalize start and next;
+                multiplier = .25f;
+                start -= 2;
+                next -= 2;
+            }
             
             //Check if we're moving diagonally or horizontall/vertically
             int check = Math.Abs(x - nx) + Math.Abs(y - ny);

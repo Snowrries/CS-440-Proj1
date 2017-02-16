@@ -256,7 +256,7 @@ namespace Gridworld_Heuristics
                     else
                     {
                         Naiive search = new Naiive(world);
-                        incomplete = search.hSearch(0, 0, 1, sp[0], sp[1], gp[0], gp[1]);
+                        incomplete = !search.hSearch(0, 0, 1, sp[0], sp[1], gp[0], gp[1]);
                     }
                 }
                 startPairs[i, 0] = sp[0];
