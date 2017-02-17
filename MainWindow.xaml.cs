@@ -12,29 +12,47 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Gridworld_Heuristics
 {
 
     public partial class MainWindow : Window
     {
-        
+
+        private delegate void generate_delegate();
+        private delegate void calculate_delegate();
+        private delegate void map_delegate();
+
         MainViewModel mvm = new MainViewModel();
         Grid myGrid;
+        Grid myPath;
         Button[,] buttonlist;
         Rectangle[,] backgroundList;
-        //AStarSearch aSearch;
+        private bool generating = false;
+        private bool calculating = false;
         Naiive search;
+
         public MainWindow()
         {
             this.DataContext = mvm;
+            myGrid = grid_creation();
+            myPath = grid_creation();
+            // Add the Grid as the Content of the Parent Window Object
+            this.Map.Content = myGrid;
+            this.Path.Content = myPath;
+        }
+
+        private Grid grid_creation()
+        {
+            Grid x;
             // Create the Grid
-            myGrid = new Grid();
-            myGrid.Width = 1280;
-            myGrid.Height = 960;
-            myGrid.HorizontalAlignment = HorizontalAlignment.Left;
-            myGrid.VerticalAlignment = VerticalAlignment.Top;
-            myGrid.ShowGridLines = false;
+            x = new Grid();
+            x.Width = 1280;
+            x.Height = 960;
+            x.HorizontalAlignment = HorizontalAlignment.Left;
+            x.VerticalAlignment = VerticalAlignment.Top;
+            x.ShowGridLines = false;
 
             InitializeComponent();
 
@@ -43,7 +61,7 @@ namespace Gridworld_Heuristics
             {
                 ColumnDefinition col = new ColumnDefinition();
                 col.Width = new GridLength((int)1280 / 160);
-                myGrid.ColumnDefinitions.Add(col);
+                x.ColumnDefinitions.Add(col);
             }
 
             // Define the Rows
@@ -51,41 +69,33 @@ namespace Gridworld_Heuristics
             {
                 RowDefinition row = new RowDefinition();
                 row.Height = new GridLength((int)1280 / 160);
-                myGrid.RowDefinitions.Add(row);
+                x.RowDefinitions.Add(row);
             }
-            
-            // Add the Grid as the Content of the Parent Window Object
-            this.Map.Content= myGrid;
-
+            return x;
         }
 
         private void Visualize()
         {
-            //buttonlist = new Button[120, 160];
-            backgroundList = new Rectangle[120, 160];
-            SolidColorBrush whiteBrush = new SolidColorBrush();
-            whiteBrush.Color = Colors.White;
+            myGrid.Children.Clear();
             SolidColorBrush blackBrush = new SolidColorBrush();
             blackBrush.Color = Colors.Black;
+            SolidColorBrush whiteBrush = new SolidColorBrush();
+            whiteBrush.Color = Colors.White;
             SolidColorBrush blueBrush = new SolidColorBrush();
             blueBrush.Color = Colors.Aqua;
             SolidColorBrush grayBrush = new SolidColorBrush();
             grayBrush.Color = Colors.Gray;
-            
-            for ( int i = 0; i < 120; i++)
+
+            for (int i = 0; i < 120; i++)
             {
-                for(int j = 0; j < 160; j++)
+                for (int j = 0; j < 160; j++)
                 {
+                    if (mvm.world[i, j] == 1) continue;
                     Rectangle chunk = new Rectangle();
-                    backgroundList[i, j] = chunk;
                     switch (mvm.world[i, j])
                     {
                         case 0://Black
                             chunk.Fill = blackBrush;
-                            chunk.StrokeThickness = 0;
-                            break;
-                        case 1://White
-                            chunk.Fill = whiteBrush;
                             chunk.StrokeThickness = 0;
                             break;
                         case 2://Grey
@@ -128,12 +138,19 @@ namespace Gridworld_Heuristics
                     mvm.h = chunky.h;
                 }
             }
-            
-            //Grab button coordinates
-            //Look up coordinates in the algorithm results
-            //Update fgh 
+
         }
         private void Generate_Click(object sender, RoutedEventArgs e)
+        {
+            if (!generating)
+            {
+                generating = true;
+                Generate.Dispatcher.BeginInvoke(
+                        DispatcherPriority.Normal,
+                        new generate_delegate(gen));
+            }
+        }
+        private void gen()
         {
             //Create the world.
             createWorld.generateWorld();
@@ -142,19 +159,35 @@ namespace Gridworld_Heuristics
             //Visualize the world.
             Visualize();
             mvm.RefreshPairs();
+            generating = false;
         }
 
         private void Calculate_Click(object sender, RoutedEventArgs e)
+        {
+            if (!calculating)
+            {
+                calculating = true;
+                Generate.Dispatcher.BeginInvoke(
+                        DispatcherPriority.Normal,
+                        new calculate_delegate(calc));
+            }
+        }
+        private void calc()
         {
             //Check what the algorithms dropdown selection is, and the weight for the heuristic.
             //Perform algorithm on the loaded world and one particular start/end pair.
             //Update Runtime
             recalculateAlgorithm();
             mvm.Runtime = search.sw.ElapsedTicks;
-
+            calculating = false;
         }
 
         private void MapSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MapSelect.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new map_delegate(select));
+
+        }
+        private void select()
         {
             //Reload the world. Update StartEndPairs
             int selection = MapSelect.SelectedIndex;
@@ -173,20 +206,6 @@ namespace Gridworld_Heuristics
 
         }
 
-        private void StartEndPairs_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //Update Map display path highlights
-            //Update Map displayed Start/goal pair
-            if (search == null) return;
-            recalculateAlgorithm();
-            mvm.Runtime = search.sw.ElapsedTicks;
-        }
-
-        //May not need this function.
-        private void StartEndPairs_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-
-        }
         private void recalculateAlgorithm()
         {
             SolidColorBrush whiteBrush = new SolidColorBrush();
@@ -205,57 +224,11 @@ namespace Gridworld_Heuristics
             startBrush.Color = Colors.Green;
             SolidColorBrush endBrush = new SolidColorBrush();
             endBrush.Color = Colors.Red;
-            Visualize();
-            buttonlist = new Button[120, 160];
-            //Rerun the algorithm, update runtime
-            int pairIdx = StartEndPairs.SelectedIndex;
-            if (pairIdx < 0) pairIdx = 0;
-            float wght;
-            if (!float.TryParse(Weight.Text, out wght)) {
-                wght = 1;
-            }
-            search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
-                mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
 
-            //Interpret search data.
-            worldNode a = search.end;
-            while (a.parent != null)
-            {
-                a = a.parent;
-                Button chunk = new Button();
-                myGrid.Children.Remove(backgroundList[a.x, a.y]);
-                buttonlist[a.x, a.y] = chunk;
-                switch (mvm.world[a.x, a.y])
-                {
-                    case 0://Black
-                        //Should never get here.
-                        break;
-                    case 1://White
-                        chunk.Background = whiteBrush;
-                        break;
-                    case 2://Grey
-                        chunk.Background = grayBrush;
-                        break;
-                    case 3://white river
-                        chunk.Background = chartreuseBrush;
-                        break;
-                    case 4://Grey river
-                        chunk.Background = beigeBrush;
-                        break;
+            SolidColorBrush transparent = new SolidColorBrush();
+            transparent.Color = Colors.Transparent;
 
-                    default://??
-                        break;
-                }
-                chunk.BorderBrush = pathBrush;
-                chunk.BorderThickness = new Thickness(1);
-                chunk.Content = new int[] { a.x, a.y } ;
-                chunk.Click += chunkClick;
-                Grid.SetColumn(chunk, a.y);
-                Grid.SetRow(chunk, a.x);
 
-                myGrid.Children.Add(chunk);
-            }
-            //Update Start/end pair appearance
             int spi = StartEndPairs.SelectedIndex;
             if (spi < 0) spi = 0;
             int startx = mvm.startPairs[spi, 0];
@@ -263,59 +236,49 @@ namespace Gridworld_Heuristics
             int endx = mvm.endPairs[spi, 0];
             int endy = mvm.endPairs[spi, 1];
 
-            List<int> sep = new List<int> { mvm.world[startx, starty], mvm.world[endx, endy] };
-            myGrid.Children.Remove(buttonlist[startx, starty]);
-            myGrid.Children.Remove(buttonlist[endx, endy]);
-            int i = 0;
-            foreach (int ba in sep)
+            //Rerun the algorithm, update runtime
+            int pairIdx = StartEndPairs.SelectedIndex;
+            if (pairIdx < 0) pairIdx = 0;
+            float wght;
+            if (!float.TryParse(Weight.Text, out wght))
             {
-                Button chunk = new Button();
-                switch (ba)
-                {
-                    case 0://Black
-                           //Should never get here.
-                        break;
-                    case 1://White
-                        chunk.Background = whiteBrush;
-                        break;
-                    case 2://Grey
-                        chunk.Background = grayBrush;
-                        break;
-                    case 3://white river
-                        chunk.Background = chartreuseBrush;
-                        break;
-                    case 4://Grey river
-                        chunk.Background = beigeBrush;
-                        break;
-
-                    default://??
-                        break;
-                }
-                if (i == 0)
-                {
-                    chunk.BorderBrush = startBrush;
-                    chunk.BorderThickness = new Thickness(1);
-                    chunk.Content = new int[] { startx, starty };
-                    buttonlist[startx, starty] = chunk;
-                    Grid.SetColumn(chunk, starty);
-                    Grid.SetRow(chunk, startx);
-
-                }
-                else
-                {
-                    chunk.BorderBrush = endBrush;
-                    chunk.BorderThickness = new Thickness(1);
-                    chunk.Content = new int[] { endx, endy};
-                    buttonlist[endx, endy] = chunk;
-                    Grid.SetColumn(chunk, endy );
-                    Grid.SetRow(chunk, endx);
-
-                }
-                chunk.Click += chunkClick;
-                myGrid.Children.Add(chunk);
-                i++;
+                wght = 1;
             }
+            search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+                mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+            myPath.Children.Clear();
+            //Interpret search data.
+            Button chunk;
+            worldNode a = search.end;
+            while (a.parent != null)
+            {
+                chunk = new Button();
+                if (a.x == endx && a.y == endy)
+                    chunk.BorderBrush = endBrush;
+                else
+                    chunk.BorderBrush = pathBrush;
+                chunk.Background = transparent;
+                chunk.BorderThickness = new Thickness(1);
+                chunk.Content = new int[] { a.x, a.y };
+                chunk.Click += chunkClick;
+                Grid.SetColumn(chunk, a.y);
+                Grid.SetRow(chunk, a.x);
+
+                a = a.parent;
+                myPath.Children.Add(chunk);
+            }
+            chunk = new Button();
+            chunk.Background = transparent;
+            chunk.BorderBrush = startBrush;
+            chunk.BorderThickness = new Thickness(1);
+            chunk.Content = new int[] { a.x, a.y };
+            chunk.Click += chunkClick;
+            Grid.SetColumn(chunk, a.y);
+            Grid.SetRow(chunk, a.x);
+            myPath.Children.Add(chunk);
+            //Update Start/end pair appearance
+
         }
-            
+
     }
 }

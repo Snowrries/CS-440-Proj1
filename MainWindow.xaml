@@ -7,8 +7,9 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="1000" Width="1500">
     <Grid>
-        <ContentControl Name="Map" Width="1280" HorizontalAlignment="Left">
-        </ContentControl>
+        <ContentControl Name="Map" Width="1280" HorizontalAlignment="Left" Background="White"/>
+        <ContentControl Name="Path" Width="1280" HorizontalAlignment="Left" Background="Transparent"/>
+
         <StackPanel Name="Panel" Width="200" HorizontalAlignment="Right">
 
             <TextBlock Padding="10" FontSize="14">Algorithm details</TextBlock>
@@ -45,7 +46,7 @@
 
             <TextBlock Padding="10" FontSize="14">Start End Pairs:</TextBlock>
             <ComboBox Name="StartEndPairs" ItemsSource ="{Binding PairList}" Padding="10" FontSize ="14" Width="130" 
-                      SelectedIndex="0" SelectionChanged="StartEndPairs_SelectionChanged"></ComboBox>
+                      SelectedIndex="0" ></ComboBox>
             <TextBlock Padding="10" FontSize="14">Map Selection:</TextBlock>
             <ComboBox Name="MapSelect" Padding="10" FontSize ="14" Width="130" SelectionChanged="MapSelect_SelectionChanged"
                       SelectedIndex="0" ItemsSource="{Binding Path=MapList}"></ComboBox>
