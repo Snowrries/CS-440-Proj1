@@ -31,6 +31,7 @@ namespace Gridworld_Heuristics
         List<worldNode> closedList;
         public worldNode end;
         public Stopwatch sw;
+        public int expanded;
 
         public Naiive(int[,] world)
         {
@@ -55,6 +56,8 @@ namespace Gridworld_Heuristics
             int cx = startx;
             int cy = starty;
             int nx, ny;
+            expanded = 0;
+
             float h = computeHeuristic(heuristic, algo, weight, cx, cy, endx, endy); //Place heuristic in here.
             
             fringe = new SimplePriorityQueue<worldNode, float>();
@@ -65,6 +68,7 @@ namespace Gridworld_Heuristics
             while (fringe.Any())
             {
                 currentNode = fringe.Dequeue();
+                expanded++;
                 cx = currentNode.x;
                 cy = currentNode.y;
                 if (currentNode == worldNodes[endx, endy])
@@ -85,7 +89,7 @@ namespace Gridworld_Heuristics
                         }
                         if (worldNodes[nx, ny] == null)
                         {
-                            //Was never expanded.
+                            //Was never generated.
                             nextNode = new worldNode(nx, ny);
                             worldNodes[nx, ny] = nextNode;
                             UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
@@ -121,7 +125,6 @@ namespace Gridworld_Heuristics
                 weight = 1;
             }
             float ret;
-            w = .25f;
             //Can be slightly optimized with a switch statement
             if (heuristic == 1)
             {
@@ -131,7 +134,7 @@ namespace Gridworld_Heuristics
             else if (heuristic == 2)
             {
                 //Manhattan (all .25)
-                ret = (float)(Math.Abs(cx - endx) + Math.Abs(cy - endy)/4);
+                ret = ((float)((Math.Abs(cx - endx) + Math.Abs(cy - endy))))/4;
             }
             else if (heuristic == 3)
             {
@@ -223,6 +226,12 @@ namespace Gridworld_Heuristics
                 start -= 2;
                 next -= 2;
             }
+
+            if (start == 3 || start == 4)
+                start -= 2;
+            if (next == 3 || next == 4)
+                next -= 2;
+
             
             //Check if we're moving diagonally or horizontall/vertically
             int check = Math.Abs(x - nx) + Math.Abs(y - ny);

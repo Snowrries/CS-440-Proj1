@@ -43,6 +43,14 @@
                 <TextBlock Padding="10" FontSize="14">Runtime:</TextBlock>
                 <TextBlock Name="runtime" Text="{Binding Path=Runtime}" Padding="10" FontSize="14" Width="110"></TextBlock>
             </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">PathLen:</TextBlock>
+                <TextBlock Name="pathlength" Text="{Binding Path=PathLen}" Padding="10" FontSize="14" Width="110"></TextBlock>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Padding="10" FontSize="14">Expanded:</TextBlock>
+                <TextBlock Name="Expanded" Text="{Binding Path=Expanded}" Padding="10" FontSize="14" Width="110"></TextBlock>
+            </StackPanel>
 
             <TextBlock Padding="10" FontSize="14">Start End Pairs:</TextBlock>
             <ComboBox Name="StartEndPairs" ItemsSource ="{Binding PairList}" Padding="10" FontSize ="14" Width="130" 

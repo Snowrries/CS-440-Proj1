@@ -87,6 +87,10 @@ namespace Gridworld_Heuristics
         public float h { get { return h_; } set { h_ = value; OnPropertyChanged("h"); } }
         private float runtime;
         public float Runtime { get { return runtime; } set { runtime = value; OnPropertyChanged("Runtime"); } }
+        private float pathlen;
+        public float PathLen { get { return pathlen; } set { pathlen = value; OnPropertyChanged("PathLen"); } }
+        private float expanded;
+        public float Expanded { get { return expanded; } set { expanded = value; OnPropertyChanged("Expanded"); } }
 
         public int[,] startPairs = new int[10, 2];
         public int[,] endPairs = new int[10, 2];

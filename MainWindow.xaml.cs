@@ -27,8 +27,6 @@ namespace Gridworld_Heuristics
         MainViewModel mvm = new MainViewModel();
         Grid myGrid;
         Grid myPath;
-        Button[,] buttonlist;
-        Rectangle[,] backgroundList;
         private bool generating = false;
         private bool calculating = false;
         Naiive search;
@@ -202,7 +200,7 @@ namespace Gridworld_Heuristics
                 wght = 1;
             }
             search = new Naiive(mvm.world);
-            bool result = search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
+            //bool result = search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
 
         }
 
@@ -246,12 +244,15 @@ namespace Gridworld_Heuristics
             }
             search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
                 mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+            mvm.Expanded = search.expanded;
             myPath.Children.Clear();
             //Interpret search data.
             Button chunk;
             worldNode a = search.end;
+            int path = 1;
             while (a.parent != null)
             {
+                path++;
                 chunk = new Button();
                 if (a.x == endx && a.y == endy)
                     chunk.BorderBrush = endBrush;
@@ -267,6 +268,7 @@ namespace Gridworld_Heuristics
                 a = a.parent;
                 myPath.Children.Add(chunk);
             }
+            mvm.PathLen = path;
             chunk = new Button();
             chunk.Background = transparent;
             chunk.BorderBrush = startBrush;
