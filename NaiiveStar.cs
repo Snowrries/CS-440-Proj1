@@ -23,106 +23,215 @@ namespace Gridworld_Heuristics
             h = 0;
         }
     }
+    class Sequential
+    {
+        Naiive[] searches;
+        Stopwatch sw;
+        int startx, starty, endx, endy;
+        float weight;
+        float weight2;
+        bool initialized = false;
+
+        public Sequential(int[,] world)
+        {
+            for(int i = 0; i < 5; i++)
+            {
+                searches[i] = new Naiive(world);
+            }
+        }
+        public void initAttr(float weight, float weight2, int startx, int starty, int endx, int endy)
+        {
+            for(int i = 0; i < 5; i++)
+            {
+                searches[i].initAttr(i, 0, weight, startx, starty, endx, endy);
+                searches[i].setup();
+            }
+            this.weight = weight;
+            this.weight2 = weight2;
+            this.startx = startx;
+            this.starty = starty;
+            this.endx = endx;
+            this.endy = endy;
+            initialized = true;
+        }
+
+        public Naiive seqSearch()
+        {
+            sw = Stopwatch.StartNew();
+            worldNode s;
+            if (!initialized)
+            {
+                return null;
+            }
+            while(searches[0].minkey < 30000)
+            {
+                for (int i = 1; i < 5; i++)
+                {
+                    Naiive a = searches[i];
+                    if(a.minkey <= weight2 * searches[0].minkey)
+                    {
+                        if(a.worldNodes[endx,endy].g < a.minkey)
+                        {
+                            if(a.worldNodes[endx,endy].g < 30000)
+                            {
+                                sw.Stop();
+                                return a;
+                            }
+                        }
+                        else
+                        {
+                            a.expandNode(a.fringe.Dequeue());
+                        }
+                    }
+                    else
+                    {
+                        if(searches[0].worldNodes[endx,endy].g <= searches[0].minkey)
+                        {
+                            if(searches[0].worldNodes[endx,endy].g < 30000)
+                            {
+                                return searches[0];
+                            }
+                        }
+                        else
+                        {
+                            searches[0].expandNode(searches[0].fringe.Dequeue());
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+
     class Naiive
     {
         int[,] world;
         public worldNode[,] worldNodes;
-        SimplePriorityQueue<worldNode, float> fringe;
-        List<worldNode> closedList;
+        public SimplePriorityQueue<worldNode, float> fringe;
+        public List<worldNode> closedList;
         public worldNode end;
         public Stopwatch sw;
         public int expanded;
+        public float minkey;
+        int heuristic;
+        int algo;
+        float weight;
+        int startx, starty, endx, endy;
 
         public Naiive(int[,] world)
         {
             this.world = world;
         }
-        
-        // Returns true if goal node is found. Returns false if no goal node is found.
-        // To do: Add options to select algorithms. Track runtime.
-        public bool hSearch(int heuristic, int algo, float weight, int startx, int starty,
+        public void initAttr(int heuristic, int algo, float weight, int startx, int starty,
             int endx, int endy)
         {
-            worldNodes = new worldNode[120,160];
+            this.heuristic = heuristic;
+            this.algo = algo;
+            this.weight = weight;
+            this.startx = startx;
+            this.starty = starty;
+            this.endx = endx;
+            this.endy = endy;
+
+        }
+        public void setup()
+        {
+            worldNodes = new worldNode[120, 160];
             sw = Stopwatch.StartNew();
-            worldNode currentNode = new worldNode(startx,starty);
-            worldNodes[startx, starty] = currentNode;
-            end = new worldNode(endx, endy);
-            worldNodes[endx, endy] = end;
-
-            worldNode nextNode;
-            currentNode.g = 0;
-
-            int cx = startx;
-            int cy = starty;
-            int nx, ny;
-            expanded = 0;
-
-            float h = computeHeuristic(heuristic, algo, weight, cx, cy, endx, endy); //Place heuristic in here.
-            
             fringe = new SimplePriorityQueue<worldNode, float>();
             closedList = new List<worldNode>();
 
-            fringe.Enqueue(currentNode, currentNode.f );//currentNode.g + h - 200*currentNode.g
+            worldNode currentNode = new worldNode(startx, starty);
+            worldNodes[startx, starty] = currentNode;
+            end = new worldNode(endx, endy);
+            worldNodes[endx, endy] = end;
+            currentNode.g = 0;
+            float h = computeHeuristic(startx, starty); //Place heuristic in here.
 
+            currentNode.f = weight * h;
+            minkey = currentNode.f;
+            fringe.Enqueue(currentNode, currentNode.f);//currentNode.g + h - 200*currentNode.g
+            expanded = 0;
+        }
+        // Returns true if goal node is found. Returns false if no goal node is found.
+        public bool hSearch()
+        {
+            worldNode currentNode;
+            setup();
             while (fringe.Any())
             {
                 currentNode = fringe.Dequeue();
-                expanded++;
-                cx = currentNode.x;
-                cy = currentNode.y;
                 if (currentNode == worldNodes[endx, endy])
                 {
                     sw.Stop();
                     return true;
                 }
-                closedList.Add(currentNode);
-                for (int i = -1; i < 2; i++)
-                {
-                    for (int j = -1; j < 2; j++)
-                    {
-                        nx = cx + i;
-                        ny = cy + j;
-                        if(nx < 0 || nx > 119 || ny < 0 || ny > 159)
-                        {
-                            continue;
-                        }
-                        if (worldNodes[nx, ny] == null)
-                        {
-                            //Was never generated.
-                            nextNode = new worldNode(nx, ny);
-                            worldNodes[nx, ny] = nextNode;
-                            UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
-                        }
-                        else
-                        {
-                            nextNode = worldNodes[nx, ny];
-                            if (!closedList.Contains(worldNodes[nx, ny]))
-                            {
-                                /*if (!fringe.Contains(worldNodes[nx, ny]))
-                                {
-                                    UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
-                                }*/
-                                UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
-                            }
-                        }
-                    }
-                }
+                expandNode(currentNode);
             }
             sw.Stop();
             return false;
         }
 
-        public float computeHeuristic(int heuristic, int algo, float w, int cx, int cy, int endx, int endy)
+        public float keyMe(worldNode s)
         {
-            float weight = w;
+            if(s!= null)
+            {
+                return s.g + weight * s.h;
+            }
+            return 30000;
+        }
+        
+        public void expandNode(worldNode currentNode)
+        {
+            expanded++;
+            int cx = currentNode.x;
+            int cy = currentNode.y;
+            worldNode nextNode;
+            int nx, ny;
+            closedList.Add(currentNode);
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    nx = cx + i;
+                    ny = cy + j;
+                    if (nx < 0 || nx > 119 || ny < 0 || ny > 159)
+                    {
+                        continue;
+                    }
+                    if (worldNodes[nx, ny] == null)
+                    {
+                        //Was never generated.
+                        nextNode = new worldNode(nx, ny);
+                        worldNodes[nx, ny] = nextNode;
+                        UpdateVertex(cx, cy, nx, ny);
+                    }
+                    else
+                    {
+                        nextNode = worldNodes[nx, ny];
+                        if (!closedList.Contains(worldNodes[nx, ny]))
+                        {
+                            /*if (!fringe.Contains(worldNodes[nx, ny]))
+                            {
+                                UpdateVertex(cx, cy, nx, ny, heuristic, algo, weight, endx, endy);
+                            }*/
+                            UpdateVertex(cx, cy, nx, ny);
+                        }
+                    }
+                }
+            }
+        }
+        public float computeHeuristic(int cx, int cy)
+        {
+            float lweight = weight;
             if (algo == 2)
             {//Uniform cost search
                 return 0;
             }
             else if(algo == 0)
             {//Plain A*
-                weight = 1;
+                lweight = 1;
             }
             float ret;
             //Can be slightly optimized with a switch statement
@@ -179,10 +288,10 @@ namespace Gridworld_Heuristics
                 //Euclidian
                 ret = (float)Math.Sqrt(Math.Pow(cx - endx, 2) + Math.Pow(cy - endy, 2));
             }
-            return ret * weight;
+            return ret * lweight;
         }
 
-        void UpdateVertex(int x, int y, int nx, int ny, int heuristic, int algo, float weight, int endx, int endy)
+        void UpdateVertex(int x, int y, int nx, int ny)
         {
             worldNode current = worldNodes[x, y];
             worldNode next = worldNodes[nx, ny];
@@ -197,7 +306,7 @@ namespace Gridworld_Heuristics
             if (current.g + css  < next.g)
             {
                 next.g = current.g + css;
-                next.h = computeHeuristic(heuristic, algo, weight, nx, ny, endx, endy);
+                next.h = computeHeuristic(nx, ny);
                 next.f = next.g + next.h;
                 next.parent = current;
                 if (fringe.Contains(next))

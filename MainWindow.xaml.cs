@@ -242,8 +242,9 @@ namespace Gridworld_Heuristics
             {
                 wght = 1;
             }
-            search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+            search.initAttr(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
                 mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+            search.hSearch();
             mvm.Expanded = search.expanded;
             myPath.Children.Clear();
             //Interpret search data.
