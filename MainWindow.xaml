@@ -66,6 +66,8 @@
             <Button Name="Generate" Click="Generate_Click" Padding="10">Generate new worlds</Button>
             <TextBlock Padding=" 3"></TextBlock>
             <Button Name="Calculate" Click="Calculate_Click" Padding="10">Calculate Path</Button>
+            <TextBlock Padding=" 3"></TextBlock>
+            <Button Name="Benchmark" Click="Benchmark_Click" Padding="10">Benchmark All</Button>
 
             <TextBlock Padding="10" FontSize="14">Status:</TextBlock>
             <TextBlock Padding="10" FontSize="10" Text="{Binding Path=status1}">...</TextBlock>

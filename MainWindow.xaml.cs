@@ -187,7 +187,7 @@ namespace Gridworld_Heuristics
                 return;
             }
             recalculateAlgorithm();
-            mvm.Runtime = search.sw.ElapsedTicks;
+            mvm.Runtime = search.sw.ElapsedMilliseconds;
             mvm.status2 = "Calculations complete!";
             calculating = false;
         }
@@ -321,6 +321,127 @@ namespace Gridworld_Heuristics
             //Update Start/end pair appearance
 
         }
+        private void snapshot(string filename, int w, int p, int a, int h, float w1, float w2)
+        {
+            StringBuilder buffer = new StringBuilder();
+            worldNode aaa = search.end;
+            int path = 1;
+            while (aaa.parent != null)
+            {
+                path++;
+                aaa = aaa.parent;
+            }
 
+            //World number, s/e pair index, algo index, heuristic index, weight, weight2, pathlength, nodesexpanded, runtime, Memory,
+            buffer.Append($"{w},{p},{a},{h},{w1},{w2},{path},{search.expanded},{search.sw.ElapsedMilliseconds},{GC.GetTotalMemory(false)}");
+
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, true))
+            {//Overwrites existing files
+                file.WriteLine(buffer.ToString());
+            }
+        }
+        private void Benchmark_Click(object sender, RoutedEventArgs e)
+        {
+            string filename = $"C:\\Users\\Public\\Gridworld_Heuristics\\testresults_{DateTime.Now.ToFileTime()}";
+            System.IO.Directory.CreateDirectory($"C:\\Users\\Public\\Gridworld_Heuristics");
+            MainViewModel benchvm = new MainViewModel();
+            float w1 = 1;
+            float w2 = 1;
+            for (int i = 0; i < 5; i++)//worlds
+            {
+                GridHelper.readInputs(i, benchvm.world, benchvm.startPairs, benchvm.endPairs, benchvm.hardPairs);
+                search = new Naiive(benchvm.world);
+                seqsearch = new Sequential(benchvm.world);
+                intsearch = new Integrated(benchvm.world);
+                for (int j = 0; j < 5; j++) //Startend pairs
+                {
+                    for(int k = 0; k < 5; k++)//Algos
+                    {
+                        if (k < 2)
+                        {
+                            for (int f = 0; f < 5; f++) // Heuristics
+                            {
+                                search.initAttr(f, k, w1, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                    benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                                search.hSearch();
+                                snapshot(filename, i, j, k, f, w1, w2);
+                                if(k == 1)
+                                {//Weighted a*
+                                    w1 = 1.25f;
+                                    search.initAttr(f, k, w1, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                    benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                                    search.hSearch();
+                                    snapshot(filename, i, j, k, f, w1, w2);
+                                    w1 = 2f;
+                                    search.initAttr(f, k, w1, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                    benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                                    search.hSearch();
+                                    snapshot(filename, i, j, k, f, w1, w2);
+                                }
+                            }
+                        }
+                        if(k == 2)
+                        {
+                            search.initAttr(-1, k, w1, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                    benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search.hSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+                        }
+                        if (k == 3)
+                        {
+                            w1 = 1.25f;
+                            w2 = 1.25f;
+                            seqsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = seqsearch.seqSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+                            
+                            w2 = 2f;
+                            seqsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = seqsearch.seqSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+
+                            w1 = 2f;
+                            seqsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = seqsearch.seqSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+
+                            w2 = 1.25f;
+                            seqsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = seqsearch.seqSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+                        }
+                        else
+                        {
+                            w1 = 1.25f;
+                            w2 = 1.25f;
+                            intsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = intsearch.intSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+                            w2 = 2f;
+                            intsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = intsearch.intSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+                            w1 = 2f;
+                            intsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = intsearch.intSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+                            w2 = 1.25f;
+                            intsearch.initAttr(w1, w2, benchvm.startPairs[j, 0], benchvm.startPairs[j, 1],
+                                benchvm.endPairs[j, 0], benchvm.endPairs[j, 1]);
+                            search = intsearch.intSearch();
+                            snapshot(filename, i, j, k, -1, w1, w2);
+
+                        }
+                    }
+                }
+            }
+        }
     }
 }
