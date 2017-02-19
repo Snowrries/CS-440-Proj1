@@ -13,7 +13,7 @@ namespace Gridworld_Heuristics
         public MainViewModel()
         {
             mapList = new ObservableCollection<string> { "World_0", "World_1", "World_2", "World_3", "World_4"};
-            algos = new ObservableCollection<string> { "A*", "Weighted A*", "Uniform Cost", "Sequential Search"};
+            algos = new ObservableCollection<string> { "A*", "Weighted A*", "Uniform Cost", "Sequential Search", "Integrated Search"};
             heuristic = new ObservableCollection<string> { "Euclidian", "Manhattan", "Manhattan/4", "Octal/4", "Chebyshev/4" };
             pairList = new ObservableCollection<string> { "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10" };
             status1 = "...";

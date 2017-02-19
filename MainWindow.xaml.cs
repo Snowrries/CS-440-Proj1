@@ -31,6 +31,7 @@ namespace Gridworld_Heuristics
         private bool calculating = false;
         Naiive search;
         Sequential seqsearch;
+        Integrated intsearch;
 
         public MainWindow()
         {
@@ -216,6 +217,7 @@ namespace Gridworld_Heuristics
             }
             search = new Naiive(mvm.world);
             seqsearch = new Sequential(mvm.world);
+            intsearch = new Integrated(mvm.world);
             //bool result = search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
 
         }
@@ -269,11 +271,17 @@ namespace Gridworld_Heuristics
                     mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
                 search.hSearch();
             }
-            else
+            else if (Algo.SelectedIndex == 3)
             {
                 seqsearch.initAttr(wght, wght2, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
                     mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
                 search = seqsearch.seqSearch();
+            }
+            else
+            {
+                intsearch.initAttr(wght, wght2, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+                    mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+                search = intsearch.intSearch();
             }
 
             mvm.Expanded = search.expanded;

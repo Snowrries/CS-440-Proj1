@@ -106,6 +106,149 @@ namespace Gridworld_Heuristics
         }
     }
 
+    class Integrated
+    {
+        Stopwatch sw;
+        Naiive anchor;
+        Naiive inad;
+        float weight,weight2;
+        int consistent = 2;
+        int startx, starty, endx, endy;
+        bool initialized = false;
+
+        public Integrated(int[,] world)
+        {
+            anchor = new Naiive(world);
+            inad = new Naiive(world);
+        }
+
+        public void initAttr(float weight, float weight2, int startx, int starty, int endx, int endy)
+        {
+            anchor.initAttr(consistent, 0, weight, startx, starty, endx, endy);
+            inad.initAttr(0, 0, weight, startx, starty, endx, endy);
+            anchor.setup();
+            inad.setup();
+            this.weight = weight;
+            this.weight2 = weight2;
+            this.startx = startx;
+            this.starty = starty;
+            this.endx = endx;
+            this.endy = endy;
+            initialized = true;
+        }
+        private void expandState(worldNode s)
+        {
+            if(anchor.fringe.Contains(s))
+                anchor.fringe.Remove(s);
+            if(inad.fringe.Contains(s))
+                inad.fringe.Remove(s);
+            worldNode sp;
+            int nx, ny;
+            int cx = s.x;
+            int cy = s.y;
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    nx = cx + i;
+                    ny = cy + j;
+                    if (nx < 0 || nx > 119 || ny < 0 || ny > 159)
+                    {
+                        continue;
+                    }
+                    if (anchor.worldNodes[nx, ny] == null)
+                    {
+                        //Was never generated.
+                        anchor.worldNodes[nx, ny] = new worldNode(nx, ny);
+                    }
+                    float cg = anchor.worldNodes[cx, cy].g;
+                    float css = anchor.cost(cx, cy, nx, ny);
+                    sp = anchor.worldNodes[nx, ny];
+                    if (css == 0)
+                    {
+                        anchor.closedList.Add(sp);
+                        inad.closedList.Add(sp);
+                    }
+
+                    if ( sp.g > cg + css)
+                    {
+                        sp.g = cg + css;
+                        sp.parent = s;
+
+                        if (!anchor.closedList.Contains(sp))
+                        {
+                            sp.h = anchor.computeHeuristic(nx, ny);
+                            sp.f = sp.h + sp.g;
+                            anchor.fringe.Enqueue(sp, anchor.keyMe(sp));
+                            if (!inad.closedList.Contains(sp))
+                            {
+                                for ( int k = 0; k < 5; k++)
+                                {
+                                    if (k == consistent) continue;
+                                    if(inad.keyMe(sp) < weight2*anchor.keyMe(sp))
+                                    {
+                                        sp.h = inad.computeHeuristic(nx, ny);
+                                        sp.f = sp.h + sp.g;
+                                        if (inad.fringe.Contains(sp))
+                                            inad.fringe.UpdatePriority(sp, inad.keyMe(sp));
+                                        else
+                                            inad.fringe.Enqueue(sp, inad.keyMe(sp));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public Naiive intSearch()
+        {
+            sw = Stopwatch.StartNew();
+            if (!initialized)
+            {
+                return null;
+            }
+            while(anchor.minkey() < 30000)
+            {
+                for(int i = 0; i < 5; i++)
+                {
+                    if (i == consistent) continue;
+                    inad.heuristic = i;
+                    if(inad.minkey() < weight2 * anchor.minkey())
+                    {
+                        if(anchor.worldNodes[endx,endy].g <= inad.minkey())
+                        {
+                            if(anchor.worldNodes[endx,endy].g < 30000)
+                            {
+                                sw.Stop();
+                                return anchor;
+                            }
+                        }
+                        else
+                        {
+                            expandState(inad.fringe.Dequeue());
+                        }
+                    }
+                    else
+                    {
+                        if(anchor.worldNodes[endx,endy].g <= anchor.minkey())
+                        {
+                            if(anchor.worldNodes[endx,endy].g < 30000)
+                            {
+                                sw.Stop();
+                                return anchor;
+                            }
+                        }
+                        else
+                        {
+                            expandState(anchor.fringe.Dequeue());
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    }
 
     class Naiive
     {
@@ -116,7 +259,7 @@ namespace Gridworld_Heuristics
         public worldNode end;
         public Stopwatch sw;
         public int expanded;
-        int heuristic;
+        public int heuristic;
         int algo;
         float weight;
         int startx, starty, endx, endy;
@@ -178,7 +321,7 @@ namespace Gridworld_Heuristics
         {
             if(s!= null)
             {
-                return s.g + weight * s.h;
+                return s.g + weight * computeHeuristic(s.x,s.y);
             }
             return 30000;
         }
@@ -302,7 +445,7 @@ namespace Gridworld_Heuristics
             return ret * lweight;
         }
 
-        void UpdateVertex(int x, int y, int nx, int ny)
+        public void UpdateVertex(int x, int y, int nx, int ny)
         {
             worldNode current = worldNodes[x, y];
             worldNode next = worldNodes[nx, ny];
@@ -327,7 +470,7 @@ namespace Gridworld_Heuristics
                 //next.g + h - 200*next.g
             }
         }
-        float cost(int x, int y, int nx, int ny)
+        public float cost(int x, int y, int nx, int ny)
         {
             int start = world[x, y];
             int next = world[nx, ny];
