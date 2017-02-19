@@ -30,6 +30,7 @@ namespace Gridworld_Heuristics
         private bool generating = false;
         private bool calculating = false;
         Naiive search;
+        Sequential seqsearch;
 
         public MainWindow()
         {
@@ -74,6 +75,7 @@ namespace Gridworld_Heuristics
 
         private void Visualize()
         {
+            mvm.status3 = "Visualizing map...";
             myGrid.Children.Clear();
             SolidColorBrush blackBrush = new SolidColorBrush();
             blackBrush.Color = Colors.Black;
@@ -119,6 +121,8 @@ namespace Gridworld_Heuristics
                     myGrid.Children.Add(chunk);
                 }
             }
+
+            mvm.status3 = "Visualization complete!";
         }
 
         private void chunkClick(object sender, RoutedEventArgs e)
@@ -143,6 +147,7 @@ namespace Gridworld_Heuristics
             if (!generating)
             {
                 generating = true;
+                mvm.status1 = "Generating...";
                 Generate.Dispatcher.BeginInvoke(
                         DispatcherPriority.Normal,
                         new generate_delegate(gen));
@@ -152,12 +157,9 @@ namespace Gridworld_Heuristics
         {
             //Create the world.
             createWorld.generateWorld();
-            //First load world 0.
-            GridHelper.readInputs(0, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
-            //Visualize the world.
-            Visualize();
-            mvm.RefreshPairs();
+            MapSelect.SelectedIndex = -1;
             generating = false;
+            mvm.status1 = "Generation complete!";
         }
 
         private void Calculate_Click(object sender, RoutedEventArgs e)
@@ -165,6 +167,7 @@ namespace Gridworld_Heuristics
             if (!calculating)
             {
                 calculating = true;
+                mvm.status2 = "Calculating...";
                 Generate.Dispatcher.BeginInvoke(
                         DispatcherPriority.Normal,
                         new calculate_delegate(calc));
@@ -175,8 +178,16 @@ namespace Gridworld_Heuristics
             //Check what the algorithms dropdown selection is, and the weight for the heuristic.
             //Perform algorithm on the loaded world and one particular start/end pair.
             //Update Runtime
+            if(MapSelect.SelectedIndex == -1 || StartEndPairs.SelectedIndex == -1)
+            {
+                System.Windows.MessageBox.Show("Please first select Algorithm and world options.");
+                calculating = false;
+                mvm.status2 = "...";
+                return;
+            }
             recalculateAlgorithm();
             mvm.Runtime = search.sw.ElapsedTicks;
+            mvm.status2 = "Calculations complete!";
             calculating = false;
         }
 
@@ -189,6 +200,10 @@ namespace Gridworld_Heuristics
         {
             //Reload the world. Update StartEndPairs
             int selection = MapSelect.SelectedIndex;
+            if(selection == -1)
+            {
+                return;
+            }
             GridHelper.readInputs(selection, mvm.world, mvm.startPairs, mvm.endPairs, mvm.hardPairs);
             //Visualize the world.
             Visualize();
@@ -200,6 +215,7 @@ namespace Gridworld_Heuristics
                 wght = 1;
             }
             search = new Naiive(mvm.world);
+            seqsearch = new Sequential(mvm.world);
             //bool result = search.hSearch(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[0, 0], mvm.startPairs[0, 1], mvm.endPairs[0, 0], mvm.endPairs[0, 1]);
 
         }
@@ -242,9 +258,24 @@ namespace Gridworld_Heuristics
             {
                 wght = 1;
             }
-            search.initAttr(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
-                mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
-            search.hSearch();
+            float wght2;
+            if (!float.TryParse(Weight2.Text, out wght2))
+            {
+                wght2 = 1;
+            }
+            if (Algo.SelectedIndex < 3)
+            {
+                search.initAttr(Heuristic.SelectedIndex, Algo.SelectedIndex, wght, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+                    mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+                search.hSearch();
+            }
+            else
+            {
+                seqsearch.initAttr(wght, wght2, mvm.startPairs[pairIdx, 0], mvm.startPairs[pairIdx, 1],
+                    mvm.endPairs[pairIdx, 0], mvm.endPairs[pairIdx, 1]);
+                search = seqsearch.seqSearch();
+            }
+
             mvm.Expanded = search.expanded;
             myPath.Children.Clear();
             //Interpret search data.

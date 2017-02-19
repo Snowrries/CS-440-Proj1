@@ -34,6 +34,7 @@ namespace Gridworld_Heuristics
 
         public Sequential(int[,] world)
         {
+            searches = new Naiive[5];
             for(int i = 0; i < 5; i++)
             {
                 searches[i] = new Naiive(world);
@@ -58,25 +59,27 @@ namespace Gridworld_Heuristics
         public Naiive seqSearch()
         {
             sw = Stopwatch.StartNew();
-            worldNode s;
             if (!initialized)
             {
                 return null;
             }
-            while(searches[0].minkey < 30000)
+            int consistent = 2;
+            while(searches[consistent].minkey() < 30000)
             {
-                for (int i = 1; i < 5; i++)
+                for (int i = 0; i < 5; i++)
                 {
+                    if (i == consistent) continue;
                     Naiive a = searches[i];
-                    if(a.minkey <= weight2 * searches[0].minkey)
+                    if(a.minkey() <= weight2 * searches[consistent].minkey())
                     {
-                        if(a.worldNodes[endx,endy].g < a.minkey)
+                        if(a.worldNodes[endx,endy].g <= a.minkey())
                         {
                             if(a.worldNodes[endx,endy].g < 30000)
                             {
                                 sw.Stop();
                                 return a;
                             }
+
                         }
                         else
                         {
@@ -85,16 +88,16 @@ namespace Gridworld_Heuristics
                     }
                     else
                     {
-                        if(searches[0].worldNodes[endx,endy].g <= searches[0].minkey)
+                        if(searches[consistent].worldNodes[endx,endy].g <= searches[consistent].minkey())
                         {
-                            if(searches[0].worldNodes[endx,endy].g < 30000)
+                            if(searches[consistent].worldNodes[endx,endy].g < 30000)
                             {
-                                return searches[0];
+                                return searches[consistent];
                             }
                         }
                         else
                         {
-                            searches[0].expandNode(searches[0].fringe.Dequeue());
+                            searches[consistent].expandNode(searches[consistent].fringe.Dequeue());
                         }
                     }
                 }
@@ -113,7 +116,6 @@ namespace Gridworld_Heuristics
         public worldNode end;
         public Stopwatch sw;
         public int expanded;
-        public float minkey;
         int heuristic;
         int algo;
         float weight;
@@ -150,7 +152,6 @@ namespace Gridworld_Heuristics
             float h = computeHeuristic(startx, starty); //Place heuristic in here.
 
             currentNode.f = weight * h;
-            minkey = currentNode.f;
             fringe.Enqueue(currentNode, currentNode.f);//currentNode.g + h - 200*currentNode.g
             expanded = 0;
         }
@@ -178,6 +179,16 @@ namespace Gridworld_Heuristics
             if(s!= null)
             {
                 return s.g + weight * s.h;
+            }
+            return 30000;
+        }
+        public float minkey()
+        {
+            if (fringe.Any())
+            {
+                worldNode a = fringe.Dequeue();
+                fringe.Enqueue(a, a.f);
+                return a.f;
             }
             return 30000;
         }
