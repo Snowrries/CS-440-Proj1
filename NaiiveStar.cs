@@ -113,6 +113,7 @@ namespace Gridworld_Heuristics
         Naiive inad;
         float weight,weight2;
         int consistent = 2;
+        int expanded = 0;
         int startx, starty, endx, endy;
         bool initialized = false;
 
@@ -142,6 +143,7 @@ namespace Gridworld_Heuristics
                 anchor.fringe.Remove(s);
             if(inad.fringe.Contains(s))
                 inad.fringe.Remove(s);
+            expanded++;
             worldNode sp;
             int nx, ny;
             int cx = s.x;
@@ -221,6 +223,7 @@ namespace Gridworld_Heuristics
                             if(anchor.worldNodes[endx,endy].g < 30000)
                             {
                                 sw.Stop();
+                                anchor.expanded = this.expanded;
                                 return anchor;
                             }
                         }
@@ -236,6 +239,7 @@ namespace Gridworld_Heuristics
                             if(anchor.worldNodes[endx,endy].g < 30000)
                             {
                                 sw.Stop();
+                                anchor.expanded = this.expanded;
                                 return anchor;
                             }
                         }
