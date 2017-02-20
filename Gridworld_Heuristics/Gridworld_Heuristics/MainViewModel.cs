@@ -12,12 +12,24 @@ namespace Gridworld_Heuristics
     {
         public MainViewModel()
         {
-            mapList = new ObservableCollection<string> { "World_0", "World_1", "World_2", "World_3", "World_4", "World_5",
-                "World_6", "World_7", "World_8", "World_9", "World_10" };
-            algos = new ObservableCollection<string> { "A*", "Weighted A*", "Uniform Cost" };
+            mapList = new ObservableCollection<string> { "World_0", "World_1", "World_2", "World_3", "World_4"};
+            algos = new ObservableCollection<string> { "A*", "Weighted A*", "Uniform Cost", "Sequential Search", "Integrated Search"};
+            heuristic = new ObservableCollection<string> { "Euclidian", "Manhattan", "Manhattan/4", "Octal/4", "Chebyshev/4" };
             pairList = new ObservableCollection<string> { "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9", "p10" };
-
+            status1 = "...";
+            status2 = "...";
+            status3 = "...";
         }
+
+        public ObservableCollection<string> heuristic { get; private set; }
+
+
+        private string s1;
+        public string status1 { get { return s1; } set { s1 = value; OnPropertyChanged("status1"); } }
+        private string s2;
+        public string status2 { get { return s2; } set { s2 = value; OnPropertyChanged("status2"); } }
+        private string s3;
+        public string status3 { get { return s3; } set { s3 = value; OnPropertyChanged("status3"); } }
 
         private ObservableCollection<string> mapList;
         public ObservableCollection<string> MapList
@@ -84,21 +96,16 @@ namespace Gridworld_Heuristics
         public float h { get { return h_; } set { h_ = value; OnPropertyChanged("h"); } }
         private float runtime;
         public float Runtime { get { return runtime; } set { runtime = value; OnPropertyChanged("Runtime"); } }
+        private float pathlen;
+        public float PathLen { get { return pathlen; } set { pathlen = value; OnPropertyChanged("PathLen"); } }
+        private float expanded;
+        public float Expanded { get { return expanded; } set { expanded = value; OnPropertyChanged("Expanded"); } }
 
         public int[,] startPairs = new int[10, 2];
         public int[,] endPairs = new int[10, 2];
         public int[,] hardPairs = new int[8, 2];
         public int[,] world = new int[120, 160];
-
-        public int tilex { get; set; } // Holds the column index of the clicked button
-
-        public int tiley { get; set; }// Row index of clicked button
-
-        public void Calculate()
-        {
-
-        }
-
+        
         public void RefreshPairs()
         {
             pairList.Clear();

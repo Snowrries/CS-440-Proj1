@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Gridworld_Heuristics
@@ -10,18 +11,23 @@ namespace Gridworld_Heuristics
     class createWorld
     {
 
-        static int[,] world = new int[120, 160];
-        static int[,] startPairs = new int[10, 2];
-        static int[,] endPairs = new int[10, 2];
-        static int[,] hardPairs = new int[8, 2];
+        private int[,] world;
+        private int[,] startPairs;
+        private int[,] endPairs;
+        private int[,] hardPairs;
+        private Random dice;
 
-
-        static int randomBorder(int[] points)
+        createWorld(int i)
         {
-            Random cPair = new Random();
-            int direction = cPair.Next(4);
-            int x = cPair.Next(120);
-            int y = cPair.Next(160);
+            dice = new Random((int)i * DateTime.Now.Millisecond);
+
+        }
+
+        int randomBorder(int[] points)
+        {
+            int direction = dice.Next(4);
+            int x = dice.Next(120);
+            int y = dice.Next(160);
             if (direction == 0) y = 159;
             else if (direction == 1) x = 119;
             else if (direction == 2) y = 0;
@@ -31,9 +37,8 @@ namespace Gridworld_Heuristics
             return direction;
         }
 
-        static int determineHeading(int[] incPair, int direction, bool first)
+        int determineHeading(int[] incPair, int direction, bool first)
         {
-            Random cPair = new Random();
             int incx;
             int incy;
             int heading;
@@ -42,7 +47,7 @@ namespace Gridworld_Heuristics
             if (first)
             {
                 //Choose orientation to head in. 
-                orientation = cPair.Next(3);
+                orientation = dice.Next(3);
                 //each number will add 90 degrees clockwise to the border orientation;
                 // If we're at the north border, 1 will mean we head east. 2 is south. 3 is west. 
                 // If we're at the east border, 1 will mean we head south. Etc.
@@ -54,7 +59,7 @@ namespace Gridworld_Heuristics
             }
             else
             {
-                int roll = cPair.Next(5);
+                int roll = dice.Next(5);
                 // if we roll 0, 1, 2 then we go in the same direction. 
                 // if we roll 3, we go left.
                 // if we roll 4, we go right.
@@ -83,9 +88,12 @@ namespace Gridworld_Heuristics
         }
 
 
-        static void create()
+        void create()
         {
-
+            world = new int[120, 160];
+            startPairs = new int[10, 2];
+            endPairs = new int[10, 2];
+            hardPairs = new int[8, 2];
             int xpair, ypair;
             //Obstacle cost = 0
             //white cost = 1
@@ -98,12 +106,11 @@ namespace Gridworld_Heuristics
                     world[i, j] = 1;
                 }
             }
-            Random cPair = new Random();
             //Create 8 centers of difficult to traverse patches.
             for (int i = 0; i < 8; i++)
             {
-                xpair = cPair.Next(120);
-                ypair = cPair.Next(160);
+                xpair = dice.Next(120);
+                ypair = dice.Next(160);
                 hardPairs[i, 0] = xpair;
                 hardPairs[i, 1] = ypair;
                 for (int j = -15; j < 15; j++)
@@ -111,7 +118,7 @@ namespace Gridworld_Heuristics
                     for (int k = -15; k < 15; k++)
                     {
                         if (xpair + j > 0 && ypair + k > 0 && xpair + j < 120 && ypair + k < 160)
-                            world[xpair + j, ypair + k] = cPair.Next(2) + 1;
+                            world[xpair + j, ypair + k] = dice.Next(2) + 1;
                     }
                 }
             }
@@ -193,9 +200,9 @@ namespace Gridworld_Heuristics
                         //Also, save progress.
                         tempworld = (int[,])tempworld2.Clone();
                     }
-                    if(failsafe > 50)
+                    if(failsafe > 1000)
                     {
-                        //If we fail more than 50 times, then just reset.
+                        //If we fail more than 500 times, then just reset.
                         failsafe = 0;
                         tempworld = (int[,])world.Clone();
                         i = 0;
@@ -215,8 +222,8 @@ namespace Gridworld_Heuristics
                 repeat = true;
                 while (repeat)
                 {
-                    x = cPair.Next(120);
-                    y = cPair.Next(160);
+                    x = dice.Next(120);
+                    y = dice.Next(160);
 
                     if (world[x, y] < 3)
                     {
@@ -227,7 +234,7 @@ namespace Gridworld_Heuristics
             }
         }
 
-        static void generatePairs()
+        void generatePairs()
         {
             bool incomplete;
             //Start and goal pairs.
@@ -240,12 +247,22 @@ namespace Gridworld_Heuristics
                 while (incomplete)
                 {
                     createPair(sp);
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (startPairs[j, 0] == sp[0] && startPairs[j, 1] == sp[1])
+                        {
+                            j = 0; createPair(sp);
+                        }
+                    }
                     createPair(gp);
-                    //ToDo: Determine if there is a valid path from sp to gp
-                    //If valid, set incomplete to false.
-                    AStarSearch aSearch = new AStarSearch(world, sp, gp, 0);
-                    bool result = aSearch.AStarSearchEx();
-                    incomplete = result; // For now, just assume it works, so that we can test output.
+                    if ((Math.Abs(sp[0] - gp[0]) + Math.Abs(sp[1] - gp[1])) < 100)
+                        incomplete = true;
+                    else
+                    {
+                        Naiive search = new Naiive(world);
+                        search.initAttr(2, 0, 1, sp[0], sp[1], gp[0], gp[1]);
+                        incomplete = !search.hSearch();
+                    }
                 }
                 startPairs[i, 0] = sp[0];
                 startPairs[i, 1] = sp[1];
@@ -255,9 +272,8 @@ namespace Gridworld_Heuristics
             }
         }
 
-        static void createPair(int[] pair)
+        void createPair(int[] pair)
         {
-            Random dice = new Random();
             int x, y;
             // Randomly create a start and end pair.
             int a = dice.Next(4);
@@ -273,76 +289,76 @@ namespace Gridworld_Heuristics
         }
         public static void generateWorld()
         {
+            Thread[] container = new Thread[5];
             for (int i = 0; i < 5; i++)
             {
-                create();
-                generatePairs();
-                StringBuilder buffer = new StringBuilder();
-
-                for (int j = 0; j < 10; j++)
-                    buffer.Append($"{startPairs[j, 0]},{startPairs[j, 1]}|");
-                buffer.AppendLine();
-
-                for (int j = 0; j < 10; j++)
-                    buffer.Append($"{endPairs[j, 0]},{endPairs[j, 1]}|");
-                buffer.AppendLine();
-
-                for (int j = 0; j < 8; j++)
-                {
-                    buffer.Append($"{hardPairs[j, 0]},{hardPairs[j, 1]}");
-                    buffer.AppendLine();
-                }
-
-                for (int j = 0; j < 120; j++)
-                {
-                    for(int k = 0; k < 160; k++)
-                    {
-                        //Process each character individually
-                        //Can Optimize by using a lookup table.
-                        switch (world[j, k])
-                        {
-                            case 0:
-                                buffer.Append("0,");
-                                break;
-                            case 1:
-                                buffer.Append("1,");
-                                break;
-                            case 2:
-                                buffer.Append("2,");
-                                break;
-                            case 3:
-                                buffer.Append("a,");
-                                break;
-                            case 4:
-                                buffer.Append("b,");
-                                break;
-                        }
-                    }
-                    buffer.AppendLine();
-                }
-
-                string filename = $"C:\\Users\\Public\\Gridworld_Heuristics\\world_{i}";
-                System.IO.Directory.CreateDirectory($"C:\\Users\\Public\\Gridworld_Heuristics");
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, false))
-                {//Overwrites existing files
-                    file.WriteLine(buffer.ToString());
-                }
-                //Create file that has the world map and start/end pairs.
-                /*• The first line provides the coordinates of sstart
-• The second line provides the coordinates of sgoal
-• The next eight lines provide the coordinates of the centers of the hard to traverse regions
-(i.e., the centers(rnd, yrnd) from the description above)
-• Then, provide 120 rows with 160 characters each that indicate the type of terrain for the map
-as follows:
-– Use ’0’ to indicate a blocked cell
-– Use ’1’ to indicate a regular unblocked cell
-– Use ’2’ to indicate a hard to traverse cell
-– Use ’a’ to indicate a regular unblocked cell with a highway
-– Use ’b’ to indicate a hard to traverse cell with a highway*/
+                var th = new Thread(gen_thread);
+                container[i] = th;
+                th.Start(i);
+            }
+            for(int i = 0; i < 5; i++)
+            {
+                container[i].Join();
             }
 
         }
 
+        private static void gen_thread(Object i)
+        {
+            createWorld newgame = new createWorld((int) i);
+            newgame.create();
+            newgame.generatePairs();
+            StringBuilder buffer = new StringBuilder();
+
+            for (int j = 0; j < 10; j++)
+                buffer.Append($"{newgame.startPairs[j, 0]},{newgame.startPairs[j, 1]}|");
+            buffer.AppendLine();
+
+            for (int j = 0; j < 10; j++)
+                buffer.Append($"{newgame.endPairs[j, 0]},{newgame.endPairs[j, 1]}|");
+            buffer.AppendLine();
+
+            for (int j = 0; j < 8; j++)
+            {
+                buffer.Append($"{newgame.hardPairs[j, 0]},{newgame.hardPairs[j, 1]}");
+                buffer.AppendLine();
+            }
+
+            for (int j = 0; j < 120; j++)
+            {
+                for (int k = 0; k < 160; k++)
+                {
+                    //Process each character individually
+                    //Can Optimize by using a lookup table.
+                    switch (newgame.world[j, k])
+                    {
+                        case 0:
+                            buffer.Append("0,");
+                            break;
+                        case 1:
+                            buffer.Append("1,");
+                            break;
+                        case 2:
+                            buffer.Append("2,");
+                            break;
+                        case 3:
+                            buffer.Append("a,");
+                            break;
+                        case 4:
+                            buffer.Append("b,");
+                            break;
+                    }
+                }
+                buffer.AppendLine();
+            }
+
+            string filename = $"C:\\Users\\Public\\Gridworld_Heuristics\\world_{i}";
+            System.IO.Directory.CreateDirectory($"C:\\Users\\Public\\Gridworld_Heuristics");
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename, false))
+            {//Overwrites existing files
+                file.WriteLine(buffer.ToString());
+            }
+        }
 
 
     }

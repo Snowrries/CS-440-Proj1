@@ -42,14 +42,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Gridworld_Heuristics.exe" size="42976">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Gridworld_Heuristics.exe" size="33248">
       <assemblyIdentity name="Gridworld_Heuristics" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>Gw+F8h6MpeDaiJEeBEX6LRi0OZHBIUQnJDsD1FNYIr8=</dsig:DigestValue>
+        <dsig:DigestValue>n6daeXSPQbVKNjvx1ysTfkBBfoc9aKKPKiQav5w6k2Y=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
